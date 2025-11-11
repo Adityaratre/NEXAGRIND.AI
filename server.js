@@ -35,25 +35,62 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // 4. Setup Passport (Google Login Strategy)
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    // Use a relative path for the callback, it will work everywhere
-    callbackURL: `/auth/google/callback` 
-},
-(accessToken, refreshToken, profile, done) => {
-    // This function is called when Google successfully authenticates a user.
-    // We just save the user's profile.
-    // In a real app, you would save this user to your database.
-    return done(null, profile);
-}));
 
-// Save user data *into* the session
+// IMPORTANT: We configure Google Strategy differently based on the environment
+if (IS_PRODUCTION) {
+    // 4a. Production/Render Setup: We set trust proxy and force HTTPS
+    app.set('trust proxy', 1); 
+    
+    // CRITICAL FIX: The callback URL must be HTTPS on Render. We use the environment variable directly.
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: `${process.env.LIVE_SITE_URL}/auth/google/callback` 
+    },
+    (accessToken, refreshToken, profile, done) => {
+        return done(null, profile);
+    }));
+
+    // Ensure session cookies are secure when live
+    app.use(session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+        cookie: { 
+            secure: true // MUST BE TRUE FOR HTTPS
+        }
+    }));
+
+} else {
+    // 4b. Local Development Setup
+    // Use the local BASE_URL variable and insecure cookies
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: `${BASE_URL}/auth/google/callback` 
+    },
+    (accessToken, refreshToken, profile, done) => {
+        return done(null, profile);
+    }));
+
+    // Local session setup
+    app.use(session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+        cookie: { 
+            secure: false // MUST BE FALSE for HTTP on localhost
+        }
+    }));
+}
+// ----------------------------------------------------
+// The rest of the passport serialization remains the same
+// Save user data into the session
 passport.serializeUser((user, done) => {
     done(null, user);
 });
 
-// Get user data *from* the session
+// Get user data from the session
 passport.deserializeUser((user, done) => {
     done(null, user);
 });
