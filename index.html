@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaGrind.AI – Welcome</title>
+    <style>
+        :root {
+            --primary-color: #4a47a3;
+            --primary-light: #7d7aeb;
+            --bg-white: #ffffff;
+            --text-dark: #333;
+            --text-light: #555;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+            /* New animated background */
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        a { text-decoration: none; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        /* --- Header --- */
+        header {
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent */
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            border-bottom: 1px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); }
+        
+        .header-buttons { display: flex; align-items: center; gap: 20px; }
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+            font-size: 1.05rem;
+        }
+        .nav-link:hover { color: var(--primary-color); }
+        .nav-button {
+            background-color: var(--primary-color);
+            color: var(--bg-white);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        .nav-button-logout {
+            background-color: #aa2e2e;
+            color: var(--bg-white);
+        }
+        .nav-button-logout:hover { background-color: #8a2a2a; }
+        .nav-button:hover {
+            background-color: #3a378a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .user-greeting { font-weight: 600; color: var(--text-dark); display: none; }
+
+        /* --- Main Splash Page --- */
+        .splash-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            text-align: center;
+            padding: 0 20px;
+            
+            /* Animation */
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1s ease-out 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Glassmorphism card for content */
+        .splash-content {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 15px;
+            padding: 50px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .splash-content h1 { font-size: 3.5rem; color: var(--text-dark); margin-bottom: 15px; }
+        .splash-content .logo-icon { font-size: 4rem; margin-bottom: 10px; display: inline-block; animation: bounce 2s infinite; }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-30px); }
+            60% { transform: translateY(-15px); }
+        }
+
+        .splash-content p { font-size: 1.25rem; color: var(--text-light); max-width: 600px; margin-bottom: 30px; }
+        
+        .splash-button {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 5px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: none;
+            cursor: pointer;
+        }
+        .splash-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(74, 71, 163, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container navbar">
+            <a href="http://localhost:3000/" class="logo">🧠 NexaGrind.AI</a>
+            <div class="header-buttons">
+                <a href="http://localhost:3000/app.html" class="nav-link">Get Help</a>
+                <a href="http://localhost:3000/contact.html" class="nav-link">Contact Us</a>
+                
+                <!-- This part will be updated by JavaScript -->
+                <span id="user-greeting" class="user-greeting"></span>
+                <a href="http://localhost:3000/auth/google" id="login-button" class="nav-button">Login</a>
+                <a href="http://localhost:3000/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Animated Splash Content -->
+    <main class="splash-container">
+        <div class="splash-content">
+            <div class="logo-icon">💡</div>
+            <h1>Your Smart Support Companion</h1>
+            <p>Paste any user ticket, get simple explanations, and chat with an AI that helps you find the right answer, faster.</p>
+            <a href="http://localhost:3000/app.html" class="splash-button">Get Started Now</a>
+        </div>
+    </main>
+
+    <script>
+        // This script checks if you are logged in
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Use absolute URL for fetch
+                const res = await fetch('http://localhost:3000/api/user');
+                const data = await res.json();
+                
+                if (data.user) {
+                    // User is logged in
+                    document.getElementById('user-greeting').textContent = `Hi, ${data.user.firstName}`;
+                    document.getElementById('user-greeting').style.display = 'inline';
+                    document.getElementById('login-button').style.display = 'none';
+                    document.getElementById('logout-button').style.display = 'inline-block';
+                } else {
+                    // User is not logged in
+                    document.getElementById('user-greeting').style.display = 'none';
+                    document.getElementById('login-button').style.display = 'inline-block';
+                    document.getElementById('logout-button').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error fetching user status:', error);
+                // Show login button as a fallback
+                document.getElementById('login-button').style.display = 'inline-block';
+            }
+        });
+    </script>
+</body>
+</html>

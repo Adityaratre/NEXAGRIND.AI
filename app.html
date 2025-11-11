@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaGrind.AI – Get Help</title>
+    
+    <!-- Scripts to translate the **symbols** -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #4a47a3; --primary-light: #7d7aeb; --bg-light: #f8f9fa;
+            --bg-white: #ffffff; --text-dark: #333; --text-light: #555;
+            --border-color: #e0e0e0; --error-color: #b91c1c;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        /* --- Header --- */
+        header { background-color: var(--bg-white); padding: 20px 0; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); text-decoration: none;}
+        .header-buttons { display: flex; align-items: center; gap: 20px; }
+        .nav-link { font-weight: 500; color: var(--text-light); text-decoration: none; transition: color 0.3s ease; }
+        .nav-link:hover { color: var(--primary-color); }
+        .nav-button { background-color: var(--primary-color); color: var(--bg-white); padding: 10px 20px; border-radius: 5px; font-weight: 500; text-decoration: none; }
+        .nav-button-active { background-color: #3a378a; } /* Active page button */
+        .nav-button-logout { background-color: #aa2e2e; color: var(--bg-white); }
+        .nav-button-logout:hover { background-color: #8a2a2a; }
+        .user-greeting { font-weight: 600; color: var(--text-dark); display: none; }
+
+        /* --- Tab Navigation --- */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+            margin: 40px auto 0;
+            max-width: 1100px;
+            padding: 0 20px;
+        }
+        .tab-button {
+            padding: 15px 25px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-light);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-button:hover {
+            color: var(--text-dark);
+        }
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        /* --- Tab Content --- */
+        .tab-content {
+            display: none;
+            padding: 40px 0;
+            animation: fadeIn 0.5s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* --- Analyzer Tab Styles --- */
+        .analyzer-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+        .input-panel {
+            background: var(--bg-white); 
+            border-radius: 8px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); 
+            border: 1px solid var(--border-color);
+            padding: 30px;
+        }
+        .input-panel h2 { font-size: 1.5rem; margin-bottom: 15px; color: var(--text-dark); }
+        #text-input { width: 100%; height: 200px; font-family: Arial, sans-serif; font-size: 1rem; padding: 15px; border-radius: 5px; border: 1px solid var(--border-color); margin-bottom: 15px; resize: vertical; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .control-button { padding: 12px; font-size: 0.95rem; font-weight: 600; border: none; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }
+        .control-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-explain { background-color: #e0e7ff; color: #3730a3; }
+        .btn-explain:hover:not(:disabled) { background-color: #c7d2fe; }
+        .btn-quiz { background-color: #d1fae5; color: #065f46; }
+        .btn-quiz:hover:not(:disabled) { background-color: #a7f3d0; }
+        #output-area { background-color: var(--bg-light); border-radius: 5px; padding: 20px; height: 100%; min-height: 200px; color: var(--text-light); overflow-y: auto; font-style: italic; white-space: pre-wrap; }
+        .output-content { font-style: normal; font-size: 0.95rem; }
+        .output-loading { font-style: italic; color: var(--text-light); }
+        .output-error { font-style: normal; font-weight: 600; color: var(--error-color); }
+        
+        /* --- History Panel (Upgraded) --- */
+        .history-panel {
+            background: var(--bg-white); 
+            border-radius: 8px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); 
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            position: sticky;
+            top: 120px; /* Sticky below header */
+        }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .history-header h2 { font-size: 1.5rem; color: var(--text-dark); }
+        #clear-history { background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 0.9rem; }
+        #history-list { list-style: none; max-height: 400px; overflow-y: auto; }
+        .history-item summary {
+            padding: 12px 10px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color 0.2s ease;
+        }
+        .history-item summary:hover { background-color: var(--bg-light); }
+        .history-item p {
+            padding: 15px;
+            background-color: var(--bg-light);
+            font-size: 0.95rem;
+            color: var(--text-light);
+            white-space: pre-wrap; /* Preserves whitespace */
+            word-wrap: break-word; /* Breaks long words */
+            border-bottom: 1px solid var(--border-color);
+        }
+        .history-item:last-child summary,
+        .history-item:last-child p { border-bottom: none; }
+        .history-placeholder {
+            padding: 10px;
+            color: #999;
+        }
+
+        /* --- Q&A Chat Tab Styles --- */
+        .chat-panel { 
+            background: var(--bg-white); 
+            border-radius: 8px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); 
+            border: 1px solid var(--border-color);
+            padding: 30px; 
+            display: flex; 
+            flex-direction: column; 
+            height: 70vh; /* Fixed height for chat */
+            max-width: 800px;
+            margin: 0 auto; /* Center the chat box */
+        }
+        .chat-panel h2 { font-size: 1.5rem; margin-bottom: 15px; text-align: center; }
+        #chat-window { flex-grow: 1; background-color: var(--bg-white); border: 1px solid var(--border-color); border-radius: 5px; padding: 15px; overflow-y: auto; margin-bottom: 15px; }
+        .chat-message { margin-bottom: 15px; padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
+        .user-message { background-color: var(--primary-color); color: var(--bg-white); margin-left: auto; border-bottom-right-radius: 0; }
+        .buddy-message { background-color: #e0e0e0; color: var(--text-dark); margin-right: auto; border-bottom-left-radius: 0; white-space: pre-wrap; }
+        .buddy-message.loading { font-style: italic; color: var(--text-light); }
+        .buddy-message.error { background-color: #fef2f2; color: var(--error-color); font-weight: 600; }
+        .chat-input-area { display: flex; gap: 10px; }
+        #chat-input { flex-grow: 1; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 1rem; }
+        #chat-input:disabled { background-color: #f1f1f1; }
+        #send-button { padding: 12px 20px; font-size: 1rem; font-weight: 600; background-color: var(--primary-color); color: var(--bg-white); border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; }
+        #send-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        #send-button:hover:not(:disabled) { background-color: #3a378a; }
+        
+        /* --- Security Modal --- */
+        #login-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        #login-modal {
+            background: var(--bg-white);
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        #login-modal h2 {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+        #login-modal p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 30px;
+        }
+        #login-modal-button {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        #login-modal-button:hover {
+            background-color: #3a378a;
+            transform: translateY(-2px);
+        }
+
+        footer { background-color: #333; color: #aaa; padding: 40px 0; text-align: center; margin-top: 60px; }
+        
+        @media (max-width: 900px) { 
+            .analyzer-container { grid-template-columns: 1fr; } 
+            .history-panel { position: static; margin-top: 0; }
+        }
+        @media (max-width: 768px) { 
+            .controls { grid-template-columns: 1fr; } 
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container navbar">
+            <a href="http://localhost:3000/" class="logo">🧠 NexaGrind.AI</a>
+            <div class="header-buttons">
+                <a href="http://localhost:3000/app.html" class="nav-link nav-button-active">Get Help</a>
+                <a href="http://localhost:3000/contact.html" class="nav-link">Contact Us</a>
+                
+                <span id="user-greeting" class="user-greeting"></span>
+                <a href="http://localhost:3000/auth/google" id="login-button" class="nav-button" style="display: none;">Login</a>
+                <a href="http://localhost:3000/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="tab-nav container">
+        <button class="tab-button active" data-tab="analyzer">Analyzer</button>
+        <button class="tab-button" data-tab="chat">Q&A Chat</button>
+    </div>
+
+    <main>
+        <!-- Tab 1: Analyzer -->
+        <div id="analyzer" class="tab-content active">
+            <div class="container analyzer-container">
+                <div class="input-panel">
+                    <h2>Analyze Your Text</h2>
+                    <textarea id="text-input" placeholder="Paste your user ticket, notes, or question here..."></textarea>
+                    <div class="controls">
+                        <button class="control-button btn-explain" id="explain-button">Summarize</button>
+                        <button class="control-button btn-quiz" id="quiz-button">Suggest Solution</button>
+                    </div>
+                    <div id="output-area">
+                        <p>Your AI-generated summaries and solutions will appear here.</p>
+                    </div>
+                </div>
+                <div class="history-panel">
+                    <div class="history-header">
+                        <h2>History</h2>
+                        <button id="clear-history">Clear All</button>
+                    </div>
+                    <div id="history-list">
+                        <!-- History items will be added here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Q&A Chat -->
+        <div id="chat" class="tab-content">
+            <div class="chat-panel">
+                <h2>Q&A Chat</h2>
+                <div id="chat-window">
+                    <div class="chat-message buddy-message">
+                        Hi there! Ask me for help with a ticket or any other question.
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Ask a follow-up question...">
+                    <button id="send-button">Send</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Security Modal -->
+    <div id="login-modal-overlay">
+        <div id="login-modal">
+            <h2>Please Log In</h2>
+            <p>You must be logged in to use the AI features.</p>
+            <a href="http://localhost:3000/auth/google" id="login-modal-button">Login with Google</a>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 NexaGrind.AI. All rights reserved.</p>
+        </div>
+    </footer>
+<script>
+        // --- Globals ---
+        let IS_LOGGED_IN = false;
+        const BASE_URL = "http://localhost:3000";
+
+        // --- Get All Elements ---
+        const textInput = document.getElementById('text-input');
+        const explainButton = document.getElementById('explain-button');
+        const quizButton = document.getElementById('quiz-button');
+        const outputArea = document.getElementById('output-area');
+        
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
+        
+        const historyList = document.getElementById('history-list');
+        const clearHistoryButton = document.getElementById('clear-history');
+
+        const loginModalOverlay = document.getElementById('login-modal-overlay');
+        const loginModal = document.getElementById('login-modal');
+
+        // --- 1. Check Login Status On Page Load ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Use absolute URL for fetch
+                const res = await fetch(`${BASE_URL}/api/user`);
+                const data = await res.json();
+                
+                const userGreeting = document.getElementById('user-greeting');
+                const loginButton = document.getElementById('login-button');
+                const logoutButton = document.getElementById('logout-button');
+
+                if (data.user) {
+                    // User IS logged in
+                    IS_LOGGED_IN = true;
+                    userGreeting.textContent = `Hi, ${data.user.firstName}`;
+                    userGreeting.style.display = 'inline';
+                    loginButton.style.display = 'none';
+                    logoutButton.style.display = 'inline-block';
+                    loadHistory(); // Load history now that we are logged in
+                } else {
+                    // User is NOT logged in
+                    IS_LOGGED_IN = false;
+                    userGreeting.style.display = 'none';
+                    loginButton.style.display = 'inline-block';
+                    logoutButton.style.display = 'none';
+                    showLoginModal(true); // Show the login popup
+                }
+            } catch (error) {
+                console.error('Error fetching user status:', error);
+                IS_LOGGED_IN = false;
+                showLoginModal(true); // Show login popup on error
+            }
+
+            // --- 2. Setup Tab Listeners ---
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabName = button.getAttribute('data-tab');
+
+                    // Deactivate all
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Activate the one clicked
+                    button.classList.add('active');
+                    document.getElementById(tabName).classList.add('active');
+                });
+            });
+            
+            // Set default tab
+            document.querySelector('.tab-button[data-tab="analyzer"]').click();
+        });
+
+        // --- 3. Security Modal ---
+        function showLoginModal(show) {
+            if (show) {
+                loginModalOverlay.style.display = 'flex';
+                setTimeout(() => {
+                    loginModal.style.transform = 'scale(1)';
+                    loginModal.style.opacity = '1';
+                }, 10);
+            } else {
+                loginModalOverlay.style.display = 'none';
+                loginModal.style.transform = 'scale(0.9)';
+                loginModal.style.opacity = '0';
+            }
+        }
+        
+        // --- 4. Analyzer Tab Functions ---
+        explainButton.addEventListener('click', () => {
+            if (!IS_LOGGED_IN) return showLoginModal(true);
+            const text = textInput.value;
+            const prompt = "Summarize the following text in a few bullet points:";
+            generateContent(text, prompt);
+        });
+
+        quizButton.addEventListener('click', () => {
+            if (!IS_LOGGED_IN) return showLoginModal(true);
+            const text = textInput.value;
+            const prompt = "Based on this text, what is a likely solution or next step?";
+            generateContent(text, prompt);
+        });
+
+        async function generateContent(text, prompt) {
+            if (text.trim() === "") {
+                outputArea.innerHTML = `<div class="output-error">Please paste some text first!</div>`;
+                return;
+            }
+
+            outputArea.innerHTML = `<div class="output-loading">🧠 Generating...</div>`;
+            setControlsLoading(true);
+
+            try {
+                // Use absolute URL for fetch
+                const response = await fetch(`${BASE_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, prompt })
+                });
+
+                if (response.status === 401) { // 401 means "Unauthorized"
+                    showLoginModal(true);
+                    outputArea.innerHTML = `<div class="output-error">You must be logged in.</div>`;
+                    setControlsLoading(false);
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    outputArea.innerHTML = DOMPurify.sanitize(marked.parse(data.content));
+                    outputArea.style.fontStyle = 'normal'; 
+                    saveToHistory(text); // Save the *input text*
+                } else {
+                    outputArea.innerHTML = `<div class="output-error">${data.content}</div>`;
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                outputArea.innerHTML = `<div class="output-error">⚠️ Error: Could not connect to the server. Is it running?</div>`;
+            }
+            setControlsLoading(false);
+        }
+
+        // --- 5. Q&A Chat Tab Functions ---
+        sendButton.addEventListener('click', handleChatSend);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { handleChatSend(); }
+        });
+
+        async function handleChatSend() {
+            if (!IS_LOGGED_IN) return showLoginModal(true);
+            const message = chatInput.value.trim();
+            if (message === "") return;
+
+            addChatMessage(message, 'user');
+            chatInput.value = "";
+            addChatMessage("... typing", 'buddy-loading');
+            setControlsLoading(true);
+
+            try {
+                // Use absolute URL for fetch
+                const response = await fetch(`${BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                if (response.status === 401) {
+                    chatWindow.querySelector('.loading').remove();
+                    showLoginModal(true);
+                    addChatMessage("You must be logged in to chat.", 'buddy-error');
+                    setControlsLoading(false);
+                    return;
+                }
+
+                const data = await response.json();
+                chatWindow.querySelector('.loading').remove();
+
+                if (data.success) {
+                    addChatMessage(data.reply, 'buddy');
+                } else {
+                    addChatMessage(data.reply, 'buddy-error');
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                chatWindow.querySelector('.loading').remove();
+                addChatMessage("Error: Could not connect to the server.", 'buddy-error');
+            }
+            setControlsLoading(false);
+        }
+
+        function addChatMessage(message, type) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message');
+
+            if (type === 'user') {
+                messageElement.classList.add('user-message');
+                messageElement.textContent = message; 
+            } else if (type === 'buddy') {
+                messageElement.classList.add('buddy-message');
+                messageElement.innerHTML = DOMPurify.sanitize(marked.parse(message));
+            } else if (type === 'buddy-loading') {
+                messageElement.classList.add('buddy-message', 'loading');
+                messageElement.textContent = message;
+            } else if (type === 'buddy-error') {
+                messageElement.classList.add('buddy-message', 'error');
+                messageElement.textContent = message;
+            }
+            
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        // --- 6. History Functions (Upgraded) ---
+        function getHistory() {
+            return JSON.parse(localStorage.getItem('nexaGrindHistory') || '[]');
+        }
+
+        function saveToHistory(text) {
+            const history = getHistory();
+            
+            // Create a short title for the summary
+            const title = text.split(' ').slice(0, 5).join(' ') + '...';
+            
+            const historyEntry = {
+                title: title,
+                content: text
+            };
+
+            // Add new item to the *beginning* of the array
+            history.unshift(historyEntry);
+            const limitedHistory = history.slice(0, 20); // Keep last 20
+            localStorage.setItem('nexaGrindHistory', JSON.stringify(limitedHistory));
+            
+            loadHistory();
+        }
+
+        function loadHistory() {
+            const history = getHistory();
+            historyList.innerHTML = ''; // Clear the list
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="history-placeholder">Your history is empty.</div>';
+                return;
+            }
+            
+            history.forEach(entry => {
+                const details = document.createElement('details');
+                details.classList.add('history-item');
+
+                const summary = document.createElement('summary');
+                summary.textContent = entry.title;
+                
+                const content = document.createElement('p');
+                content.textContent = entry.content;
+                
+                // Add click event to load this text back into the text box
+                content.addEventListener('click', () => {
+                    textInput.value = entry.content;
+                    // Switch to the analyzer tab
+                    document.querySelector('.tab-button[data-tab="analyzer"]').click();
+                });
+
+                details.appendChild(summary);
+                details.appendChild(content);
+                historyList.appendChild(details);
+            });
+        }
+        
+        clearHistoryButton.addEventListener('click', () => {
+            localStorage.removeItem('nexaGrindHistory');
+            loadHistory(); // Re-draw the (now empty) list
+        });
+        
+        // --- General Loading State ---
+        function setControlsLoading(isLoading) {
+            explainButton.disabled = isLoading;
+            quizButton.disabled = isLoading;
+            chatInput.disabled = isLoading;
+            sendButton.disabled = isLoading;
+        }
+    </script>
+</body>
+</html>

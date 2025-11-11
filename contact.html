@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaGrind.AI – Contact Us</title>
+    <style>
+        :root {
+            --primary-color: #4a47a3;
+            --primary-light: #7d7aeb;
+            --bg-white: #ffffff;
+            --text-dark: #333;
+            --text-light: #555;
+            --border-color: #e0e0e0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+        }
+        a { text-decoration: none; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        /* --- Header --- */
+        header {
+            background-color: var(--bg-white);
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); }
+        .header-buttons { display: flex; align-items: center; gap: 20px; }
+        .nav-link { font-weight: 500; color: var(--text-light); transition: color 0.3s ease; }
+        .nav-link:hover { color: var(--primary-color); }
+        .nav-button-active { color: var(--primary-color); } /* Active page link */
+        .nav-button { background-color: var(--primary-color); color: var(--bg-white); padding: 10px 20px; border-radius: 5px; font-weight: 500; }
+        .nav-button-logout { background-color: #aa2e2e; color: var(--bg-white); }
+        .nav-button-logout:hover { background-color: #8a2a2a; }
+        .user-greeting { font-weight: 600; color: var(--text-dark); display: none; }
+        
+        /* --- Contact Page --- */
+        .contact-container {
+            max-width: 700px;
+            margin: 60px auto;
+            padding: 40px;
+            background-color: var(--bg-white);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 1s ease-out 0.5s forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* This is for your photo */
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%; /* Makes it a circle */
+            object-fit: cover;
+            border: 4px solid var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .contact-container h1 {
+            font-size: 2.5rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+        .contact-container .creator-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--primary-light);
+            margin-bottom: 30px;
+        }
+        .contact-container p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+        .contact-details {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+            text-align: left;
+            display: inline-block;
+        }
+        .contact-details li {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .contact-details svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--primary-color);
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        /* Social Media "Buttons" */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .social-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 20px;
+            border-radius: 5px;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+        .social-button svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            fill: var(--text-dark);
+            transition: fill 0.3s ease;
+        }
+        .social-button:hover {
+            background-color: var(--primary-color);
+            color: var(--bg-white);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .social-button:hover svg {
+            fill: var(--bg-white);
+        }
+
+        footer { background-color: #333; color: #aaa; padding: 40px 0; text-align: center; margin-top: 60px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container navbar">
+            <a href="http://localhost:3000/" class="logo">🧠 NexaGrind.AI</a>
+            <div class="header-buttons">
+                <a href="http://localhost:3000/app.html" class="nav-link">Get Help</a>
+                <a href="http://localhost:3000/contact.html" class="nav-link nav-link-active">Contact Us</a>
+                
+                <span id="user-greeting" class="user-greeting"></span>
+                <a href="http://localhost:3000/auth/google" id="login-button" class="nav-button" style="display: none;">Login</a>
+                <a href="http://localhost:3000/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="contact-container">
+        <!-- 
+            HERE IS YOUR IMAGE!
+            I have put your image link in the `src` attribute.
+        -->
+        <img src="https://i.ibb.co/qLPp2TqM/image.png" alt="Creator Photo" class="profile-image" 
+             onerror="this.src='https://placehold.co/150x150/4a47a3/ffffff?text=AR';"> <!-- Fallback placeholder -->
+
+        <h1>Aditya Ratre</h1>
+        <div class="creator-title">Creator of NexaGrind.AI</div>
+        <p>
+            Welcome to NexaGrind! This tool was built to help provide smart, fast, and reliable
+            support. If you have any questions or feedback, feel free to reach out.
+        </p>
+
+        <ul class="contact-details">
+            <li>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,4H4C2.9,4,2,4.9,2,6v12c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V6C22,4.9,21.1,4,20,4z M20,8l-8,5L4,8V6l8,5l8-5V8z"/></svg>
+                <span>nexagrind@gmail.com</span>
+            </li>
+        </ul>
+
+        <div class="social-links">
+            <a href="https://www.instagram.com/nexagrindyt" target="_blank" class="social-button">
+                <!-- Instagram SVG Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2,22,4.6,22,7.8V16.2C22,19.4,19.4,22,16.2,22H7.8C4.6,22,2,19.4,2,16.2V7.8C2,4.6,4.6,2,7.8,2M7.6,4A3.6,3.6,0,0,0,4,7.6V16.4A3.6,3.6,0,0,0,7.6,20H16.4A3.6,3.6,0,0,0,20,16.4V7.6A3.6,3.6,0,0,0,16.4,4H7.6M17.2,6A1.2,1.2,0,1,0,18.4,7.2,1.2,1.2,0,0,0,17.2,6M12,7A5,5,0,1,0,17,12,5,5,0,0,0,12,7M12,9A3,3,0,1,1,9,12,3,3,0,0,1,12,9Z"/></svg>
+                NexaGrind
+            </a>
+            <a href="https://www.instagram.com/mr.aditya_ratre" target="_blank" class="social-button">
+                <!-- Instagram SVG Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2,22,4.6,22,7.8V16.2C22,19.4,19.4,22,16.2,22H7.8C4.6,22,2,19.4,2,16.2V7.8C2,4.6,4.6,2,7.8,2M7.6,4A3.6,3.6,0,0,0,4,7.6V16.4A3.6,3.6,0,0,0,7.6,20H16.4A3.6,3.6,0,0,0,20,16.4V7.6A3.6,3.6,0,0,0,16.4,4H7.6M17.2,6A1.2,1.2,0,1,0,18.4,7.2,1.2,1.2,0,0,0,17.2,6M12,7A5,5,0,1,0,17,12,5,5,0,0,0,12,7M12,9A3,3,0,1,1,9,12,3,3,0,0,1,12,9Z"/></svg>
+                Mr. Aditya Ratre
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 NexaGrind.AI. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // This script checks if you are logged in
+        document.addEventListener('DOMContentLoaded', async () => {
+            const BASE_URL = "http://localhost:3000";
+            try {
+                const res = await fetch(`${BASE_URL}/api/user`);
+                const data = await res.json();
+                
+                const userGreeting = document.getElementById('user-greeting');
+                const loginButton = document.getElementById('login-button');
+                const logoutButton = document.getElementById('logout-button');
+
+                if (data.user) {
+                    // User is logged in
+                    userGreeting.textContent = `Hi, ${data.user.firstName}`;
+                    userGreeting.style.display = 'inline';
+                    loginButton.style.display = 'none';
+                    logoutButton.style.display = 'inline-block';
+                } else {
+                    // User is not logged in
+                    userGreeting.style.display = 'none';
+                    loginButton.style.display = 'inline-block';
+                    logoutButton.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error fetching user status:', error);
+                document.getElementById('login-button').style.display = 'inline-block';
+            }
+        });
+    </script>
+
+</body>
+</html>
