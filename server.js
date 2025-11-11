@@ -10,54 +10,39 @@ require('dotenv').config(); // Loads the API key from .env
 // 2. Setup the Server
 const app = express();
 const port = 3000;
-// Use an empty string for BASE_URL to work with relative paths
-// This will work on localhost AND on Render
-const BASE_URL = ''; 
+// CRITICAL FIX: Define variables here so the rest of the file sees them
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const BASE_URL = IS_PRODUCTION ? process.env.LIVE_SITE_URL : `http://localhost:${port}`;
 
 // 3. Setup Middlewares
 app.use(express.json()); // Allow the server to read JSON data
 
-// Setup for User Login Sessions
-// This must be configured *before* passport
-app.use(session({
-    secret: process.env.SESSION_SECRET, // The random string from your .env
-    resave: false,
-    saveUninitialized: true,
-    cookie: { 
-        secure: false, // Use 'true' if you deploy to HTTPS
-        httpOnly: true,
-        sameSite: 'lax'
-    } 
-}));
+// 4. Setup Passport (Google Login Strategy) and Session Management
 
-// Initialize Passport for login
-app.use(passport.initialize());
-app.use(passport.session());
-
-// 4. Setup Passport (Google Login Strategy)
-
-// IMPORTANT: We configure Google Strategy differently based on the environment
 if (IS_PRODUCTION) {
     // 4a. Production/Render Setup: We set trust proxy and force HTTPS
     app.set('trust proxy', 1); 
     
-    // CRITICAL FIX: The callback URL must be HTTPS on Render. We use the environment variable directly.
+    // Configure the Strategy using the LIVE_SITE_URL environment variable
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        // CRITICAL FIX: The callback URL must be HTTPS on Render
         callbackURL: `${process.env.LIVE_SITE_URL}/auth/google/callback` 
     },
     (accessToken, refreshToken, profile, done) => {
         return done(null, profile);
     }));
 
-    // Ensure session cookies are secure when live
+    // Secure session setup for HTTPS
     app.use(session({
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
         cookie: { 
-            secure: true // MUST BE TRUE FOR HTTPS
+            secure: true, // MUST BE TRUE FOR HTTPS
+            httpOnly: true,
+            sameSite: 'lax'
         }
     }));
 
@@ -73,27 +58,22 @@ if (IS_PRODUCTION) {
         return done(null, profile);
     }));
 
-    // Local session setup
+    // Insecure session setup for HTTP on localhost
     app.use(session({
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
         cookie: { 
-            secure: false // MUST BE FALSE for HTTP on localhost
+            secure: false, // MUST BE FALSE for HTTP on localhost
+            httpOnly: true,
+            sameSite: 'lax'
         }
     }));
 }
-// ----------------------------------------------------
-// The rest of the passport serialization remains the same
-// Save user data into the session
-passport.serializeUser((user, done) => {
-    done(null, user);
-});
-
-// Get user data from the session
-passport.deserializeUser((user, done) => {
-    done(null, user);
-});
+// Initialize Passport *after* session setup
+app.use(passport.initialize());
+app.use(passport.session());
+// --- END OF CORRECTED TOP SECTION ---
 
 // 5. Setup the AI (OpenRouter)
 const openai = new OpenAI({
