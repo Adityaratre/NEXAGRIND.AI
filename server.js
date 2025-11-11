@@ -10,7 +10,9 @@ require('dotenv').config(); // Loads the API key from .env
 // 2. Setup the Server
 const app = express();
 const port = 3000;
-const BASE_URL = `http://localhost:${port}`;
+// Use an empty string for BASE_URL to work with relative paths
+// This will work on localhost AND on Render
+const BASE_URL = ''; 
 
 // 3. Setup Middlewares
 app.use(express.json()); // Allow the server to read JSON data
@@ -21,7 +23,11 @@ app.use(session({
     secret: process.env.SESSION_SECRET, // The random string from your .env
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // Use 'true' if you deploy to HTTPS
+    cookie: { 
+        secure: false, // Use 'true' if you deploy to HTTPS
+        httpOnly: true,
+        sameSite: 'lax'
+    } 
 }));
 
 // Initialize Passport for login
@@ -32,7 +38,8 @@ app.use(passport.session());
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${BASE_URL}/auth/google/callback`
+    // Use a relative path for the callback, it will work everywhere
+    callbackURL: `/auth/google/callback` 
 },
 (accessToken, refreshToken, profile, done) => {
     // This function is called when Google successfully authenticates a user.
@@ -93,11 +100,10 @@ app.get('/auth/google',
 
 // After Google login, Google sends them back here
 app.get('/auth/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/' }),
-    (req, res) => {
-        // Successful authentication, redirect to the app page.
-        res.redirect('/app.html');
-    }
+    passport.authenticate('google', { 
+        successRedirect: '/app.html', // On success, send them to the app
+        failureRedirect: '/' // On failure, send them back home
+    })
 );
 
 // Route for the "Logout" button
@@ -111,14 +117,16 @@ app.get('/auth/logout', (req, res, next) => {
 // Route for the frontend to check if a user is logged in
 app.get('/api/user', (req, res) => {
     if (req.isAuthenticated()) {
+        // Send back user data
         res.json({
             user: {
-                firstName: req.user.name.givenName, // Get first name
+                firstName: req.user.name.givenName,
                 email: req.user.emails[0].value,
                 photo: req.user.photos[0].value
             }
         });
     } else {
+        // Send back no user
         res.json({ user: null });
     }
 });
@@ -134,7 +142,6 @@ app.post('/generate', ensureAuthenticated, async (req, res) => {
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: 'user', content: fullPrompt }],
-      // Using the free model you found
       model: "openai/gpt-oss-20b:free", 
     });
 
@@ -143,8 +150,7 @@ app.post('/generate', ensureAuthenticated, async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    // Send a clear error to the frontend
-    res.status(500).json({ success: false, content: 'Error: Could not connect to the AI model.' });
+    res.json({ success: false, content: 'Error generating content from AI.' });
   }
 });
 
@@ -155,7 +161,6 @@ app.post('/chat', ensureAuthenticated, async (req, res) => {
     
     const completion = await openai.chat.completions.create({
       messages: [{ role: 'user', content: message }],
-      // Using the free model you found
       model: "openai/gpt-oss-20b:free", 
     });
 
@@ -164,8 +169,7 @@ app.post('/chat', ensureAuthenticated, async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    // Send a clear error to the frontend
-    res.status(500).json({ success: false, reply: 'Error: Could not connect to the AI model.' });
+    res.json({ success: false, reply: 'Error communicating with AI.' });
   }
 });
 

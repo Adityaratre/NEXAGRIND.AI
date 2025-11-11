@@ -8,29 +8,94 @@
     <!-- Scripts to translate the **symbols** -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
-
-    <style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container navbar">
+            <!-- Link updated to be relative -->
+            <a href="/" class="logo">🧠 NexaGrind.AI</a>
+            <div class="header-buttons">
+                <!-- Links updated to be relative -->
+                <a href="/app.html" class="nav-link nav-button-active">Get Help</a>
+                <a href="/contact.html" class="nav-link">Contact Us</a>
+                
+                <span id="user-greeting" class="user-greeting"></span>
+                <!-- Links updated to be relative -->
+                <a href="/auth/google" id="login-button" class="nav-button" style="display: none;">Login</a>
+                <a href="/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>
+            </div>
+        </div>
+    </header>
+<style>
         :root {
             --primary-color: #4a47a3; --primary-light: #7d7aeb; --bg-light: #f8f9fa;
             --bg-white: #ffffff; --text-dark: #333; --text-light: #555;
             --border-color: #e0e0e0; --error-color: #b91c1c;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-light); 
+            color: var(--text-dark); 
+            line-height: 1.6; 
+        }
+        .container { 
+            max-width: 1100px; 
+            margin: 0 auto; 
+            padding: 0 20px; 
+        }
         
         /* --- Header --- */
-        header { background-color: var(--bg-white); padding: 20px 0; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        header { 
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px 0; 
+            border-bottom: 1px solid var(--border-color); 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); 
+        }
         .navbar { display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); text-decoration: none;}
-        .header-buttons { display: flex; align-items: center; gap: 20px; }
-        .nav-link { font-weight: 500; color: var(--text-light); text-decoration: none; transition: color 0.3s ease; }
-        .nav-link:hover { color: var(--primary-color); }
-        .nav-button { background-color: var(--primary-color); color: var(--bg-white); padding: 10px 20px; border-radius: 5px; font-weight: 500; text-decoration: none; }
-        .nav-button-active { background-color: #3a378a; } /* Active page button */
+        .header-buttons { display: flex; align-items: center; gap: 10px; }
+        .nav-link { 
+            font-weight: 500; 
+            color: var(--text-light); 
+            text-decoration: none; 
+            transition: color 0.3s ease, background-color 0.3s ease;
+            font-size: 1.05rem;
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+        .nav-link:hover { 
+            color: var(--primary-color); 
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        .nav-link.nav-button-active {
+             color: var(--primary-color);
+             font-weight: 600;
+        }
+        .nav-button { 
+            background-color: var(--primary-color); 
+            color: var(--bg-white); 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            font-weight: 500; 
+            text-decoration: none; 
+            border: none;
+            cursor: pointer;
+        }
+        .nav-button:hover { background-color: #3a378a; }
         .nav-button-logout { background-color: #aa2e2e; color: var(--bg-white); }
         .nav-button-logout:hover { background-color: #8a2a2a; }
-        .user-greeting { font-weight: 600; color: var(--text-dark); display: none; }
+        .user-greeting { 
+            font-weight: 600; 
+            color: var(--text-dark); 
+            display: none; 
+            margin-right: 10px;
+        }
 
         /* --- Tab Navigation --- */
         .tab-nav {
@@ -74,13 +139,14 @@
             to { opacity: 1; }
         }
 
-        /* --- Analyzer Tab Styles --- */
-        .analyzer-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 30px;
-            align-items: start;
+        .app-container { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr; 
+            gap: 30px; 
+            align-items: start; /* Fixes the layout bug */
         }
+        
+        /* --- Left Panel (Input) --- */
         .input-panel {
             background: var(--bg-white); 
             border-radius: 8px; 
@@ -97,68 +163,80 @@
         .btn-explain:hover:not(:disabled) { background-color: #c7d2fe; }
         .btn-quiz { background-color: #d1fae5; color: #065f46; }
         .btn-quiz:hover:not(:disabled) { background-color: #a7f3d0; }
-        #output-area { background-color: var(--bg-light); border-radius: 5px; padding: 20px; height: 100%; min-height: 200px; color: var(--text-light); overflow-y: auto; font-style: italic; white-space: pre-wrap; }
+        #output-area { background-color: var(--bg-light); border-radius: 5px; padding: 20px; min-height: 200px; color: var(--text-light); overflow-y: auto; font-style: italic; white-space: pre-wrap; }
         .output-content { font-style: normal; font-size: 0.95rem; }
         .output-loading { font-style: italic; color: var(--text-light); }
         .output-error { font-style: normal; font-weight: 600; color: var(--error-color); }
         
-        /* --- History Panel (Upgraded) --- */
-        .history-panel {
+        /* --- Right Panel (History / Chat) --- */
+        .right-panel {
             background: var(--bg-white); 
             border-radius: 8px; 
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); 
             border: 1px solid var(--border-color);
             padding: 30px;
+            /* This makes the panel "sticky" when you scroll */
             position: sticky;
-            top: 120px; /* Sticky below header */
+            top: 120px; 
+        }
+
+        /* --- History Panel (Inside Analyzer Tab) --- */
+        .history-panel h3 { 
+            font-size: 1.5rem; 
+            color: var(--text-dark);
+            margin-bottom: 10px;
         }
         .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .history-header h2 { font-size: 1.5rem; color: var(--text-dark); }
         #clear-history { background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 0.9rem; }
         #history-list { list-style: none; max-height: 400px; overflow-y: auto; }
+        
+        /* New ChatGPT-style history */
+        .history-item {
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
         .history-item summary {
-            padding: 12px 10px;
+            padding: 12px 15px;
             cursor: pointer;
             font-weight: 500;
-            color: var(--text-dark);
-            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-light);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            transition: background-color 0.2s ease;
         }
-        .history-item summary:hover { background-color: var(--bg-light); }
-        .history-item p {
+        .history-item summary:hover {
+            background-color: #e9ecef;
+        }
+        .history-item div {
             padding: 15px;
-            background-color: var(--bg-light);
             font-size: 0.95rem;
-            color: var(--text-light);
-            white-space: pre-wrap; /* Preserves whitespace */
-            word-wrap: break-word; /* Breaks long words */
-            border-bottom: 1px solid var(--border-color);
+            line-height: 1.6;
+            white-space: pre-wrap; /* Preserves formatting */
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: var(--bg-white);
+            border-top: 1px solid var(--border-color);
         }
-        .history-item:last-child summary,
-        .history-item:last-child p { border-bottom: none; }
-        .history-placeholder {
-            padding: 10px;
-            color: #999;
+        #history-list:empty::after {
+            content: 'Your history is empty.';
+            color: var(--text-light);
+            font-style: italic;
         }
 
-        /* --- Q&A Chat Tab Styles --- */
-        .chat-panel { 
-            background: var(--bg-white); 
-            border-radius: 8px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); 
-            border: 1px solid var(--border-color);
-            padding: 30px; 
-            display: flex; 
-            flex-direction: column; 
-            height: 70vh; /* Fixed height for chat */
-            max-width: 800px;
-            margin: 0 auto; /* Center the chat box */
+
+        /* --- Chat Panel (Inside Q&A Tab) --- */
+        .chat-panel h3 { font-size: 1.5rem; margin-bottom: 15px; color: var(--text-dark); text-align: left; }
+        #chat-window { 
+            background-color: var(--bg-white); 
+            border: 1px solid var(--border-color); 
+            border-radius: 5px; 
+            padding: 15px; 
+            overflow-y: auto; 
+            height: 400px; /* Fixed height for chat */
+            margin-bottom: 15px; 
         }
-        .chat-panel h2 { font-size: 1.5rem; margin-bottom: 15px; text-align: center; }
-        #chat-window { flex-grow: 1; background-color: var(--bg-white); border: 1px solid var(--border-color); border-radius: 5px; padding: 15px; overflow-y: auto; margin-bottom: 15px; }
         .chat-message { margin-bottom: 15px; padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
         .user-message { background-color: var(--primary-color); color: var(--bg-white); margin-left: auto; border-bottom-right-radius: 0; }
         .buddy-message { background-color: #e0e0e0; color: var(--text-dark); margin-right: auto; border-bottom-left-radius: 0; white-space: pre-wrap; }
@@ -171,8 +249,8 @@
         #send-button:disabled { opacity: 0.5; cursor: not-allowed; }
         #send-button:hover:not(:disabled) { background-color: #3a378a; }
         
-        /* --- Security Modal --- */
-        #login-modal-overlay {
+        /* --- Login Modal --- */
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -185,91 +263,107 @@
             justify-content: center;
             z-index: 2000;
         }
-        #login-modal {
+        .modal-content {
             background: var(--bg-white);
-            padding: 40px;
-            border-radius: 10px;
+            padding: 30px 40px;
+            border-radius: 8px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transform: scale(0.9);
-            opacity: 0;
-            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s ease;
         }
-        #login-modal h2 {
-            font-size: 1.8rem;
-            color: var(--text-dark);
-            margin-bottom: 15px;
-        }
-        #login-modal p {
-            font-size: 1.1rem;
-            color: var(--text-light);
-            margin-bottom: 30px;
-        }
-        #login-modal-button {
+        .modal-content h3 { font-size: 1.5rem; margin-bottom: 15px; }
+        .modal-content p { margin-bottom: 25px; color: var(--text-light); }
+        .modal-button {
             background-color: var(--primary-color);
-            color: #ffffff;
-            padding: 12px 30px;
-            font-size: 1rem;
-            font-weight: 600;
+            color: var(--bg-white);
+            padding: 12px 25px;
             border-radius: 5px;
-            transition: all 0.3s ease;
-            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
         }
-        #login-modal-button:hover {
-            background-color: #3a378a;
-            transform: translateY(-2px);
-        }
+        .modal-button:hover { background-color: #3a378a; }
 
+        /* --- Footer --- */
         footer { background-color: #333; color: #aaa; padding: 40px 0; text-align: center; margin-top: 60px; }
-        
+
+        /* --- Mobile Responsive --- */
         @media (max-width: 900px) { 
-            .analyzer-container { grid-template-columns: 1fr; } 
-            .history-panel { position: static; margin-top: 0; }
+            .app-container { grid-template-columns: 1fr; } 
+            .right-panel { 
+                position: static; /* Un-stick the panel on mobile */
+                margin-top: 0; /* No top margin since it's in the tab */
+            }
+            .tab-nav { margin-top: 20px; }
+            #analyzer-container, #chat-container {
+                grid-template-columns: 1fr;
+            }
+            #analyzer-container .right-panel {
+                margin-top: 30px; /* Add margin back for analyzer tab */
+            }
         }
         @media (max-width: 768px) { 
             .controls { grid-template-columns: 1fr; } 
+            .header-buttons {
+                gap: 10px;
+            }
+            .nav-link { display: none; }
+            .user-greeting { display: none; }
+        }
+        @media (max-width: 480px) {
+            .logo { font-size: 1.5rem; }
+            .nav-button { padding: 8px 12px; font-size: 0.9rem; }
+            .tab-button { padding: 12px 15px; font-size: 1rem; }
+            .input-panel, .right-panel { padding: 20px; }
         }
     </style>
 </head>
 <body>
+    <!-- Header -->
     <header>
         <div class="container navbar">
-            <a href="http://localhost:3000/" class="logo">🧠 NexaGrind.AI</a>
+            <!-- Link updated to be relative -->
+            <a href="/" class="logo">🧠 NexaGrind.AI</a>
             <div class="header-buttons">
-                <a href="http://localhost:3000/app.html" class="nav-link nav-button-active">Get Help</a>
-                <a href="http://localhost:3000/contact.html" class="nav-link">Contact Us</a>
+                <!-- Links updated to be relative -->
+                <a href="/app.html" class="nav-link nav-link-active">Get Help</a>
+                <a href="/contact.html" class="nav-link">Contact Us</a>
                 
                 <span id="user-greeting" class="user-greeting"></span>
-                <a href="http://localhost:3000/auth/google" id="login-button" class="nav-button" style="display: none;">Login</a>
-                <a href="http://localhost:3000/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>
+                <!-- Links updated to be relative -->
+                <a href="/auth/google" id="login-button" class="nav-button">Login</a>
+                <a href="/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>
             </div>
         </div>
     </header>
 
     <!-- Tab Navigation -->
     <div class="tab-nav container">
-        <button class="tab-button active" data-tab="analyzer">Analyzer</button>
-        <button class="tab-button" data-tab="chat">Q&A Chat</button>
+        <button class="tab-button active" onclick="openTab(event, 'analyzer')">Analyzer</button>
+        <button class="tab-button" onclick="openTab(event, 'chat')">Q&A Chat</button>
     </div>
 
     <main>
-        <!-- Tab 1: Analyzer -->
+        <!-- Analyzer Tab -->
         <div id="analyzer" class="tab-content active">
-            <div class="container analyzer-container">
+            <div class="container app-container" id="analyzer-container">
+                <!-- Left Panel (Input) -->
                 <div class="input-panel">
                     <h2>Analyze Your Text</h2>
-                    <textarea id="text-input" placeholder="Paste your user ticket, notes, or question here..."></textarea>
+                    <textarea id="text-input" placeholder="Paste your user ticket, notes, or any text here..."></textarea>
                     <div class="controls">
-                        <button class="control-button btn-explain" id="explain-button">Summarize</button>
-                        <button class="control-button btn-quiz" id="quiz-button">Suggest Solution</button>
+                        <button class="control-button btn-explain" id="summarize-button">Summarize</button>
+                        <button class="control-button btn-quiz" id="solution-button">Find Solution</button>
                     </div>
                     <div id="output-area">
                         <p>Your AI-generated summaries and solutions will appear here.</p>
                     </div>
                 </div>
-                <div class="history-panel">
+
+                <!-- Right Panel (History) -->
+                <div class="right-panel history-panel">
                     <div class="history-header">
-                        <h2>History</h2>
+                        <h3>History</h3>
                         <button id="clear-history">Clear All</button>
                     </div>
                     <div id="history-list">
@@ -279,29 +373,45 @@
             </div>
         </div>
 
-        <!-- Tab 2: Q&A Chat -->
+        <!-- Q&A Chat Tab -->
         <div id="chat" class="tab-content">
-            <div class="chat-panel">
-                <h2>Q&A Chat</h2>
-                <div id="chat-window">
-                    <div class="chat-message buddy-message">
-                        Hi there! Ask me for help with a ticket or any other question.
+            <div class="container app-container" id="chat-container">
+                <!-- Left Panel (Chat) -->
+                <div class="input-panel chat-panel">
+                    <h3>Q&A Chat</h3>
+                    <div id="chat-window">
+                        <div class="chat-message buddy-message">
+                            Hi there! Ask me any follow-up questions.
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Ask a question...">
+                        <button id="send-button">Send</button>
                     </div>
                 </div>
-                <div class="chat-input-area">
-                    <input type="text" id="chat-input" placeholder="Ask a follow-up question...">
-                    <button id="send-button">Send</button>
+
+                <!-- Right Panel (Info) -->
+                <div class="right-panel">
+                    <h3>How to use chat</h3>
+                    <p>This chat is a direct line to the AI. It's perfect for:</p>
+                    <ul style="padding-left: 20px; margin-top: 15px; color: var(--text-light);">
+                        <li>Asking follow-up questions.</li>
+                        <li>Getting a second opinion.</li>
+                        <li>Drafting a quick email.</li>
+                        <li>Brainstorming ideas.</li>
+                    </ul>
                 </div>
             </div>
         </div>
     </main>
-    
-    <!-- Security Modal -->
-    <div id="login-modal-overlay">
-        <div id="login-modal">
-            <h2>Please Log In</h2>
-            <p>You must be logged in to use the AI features.</p>
-            <a href="http://localhost:3000/auth/google" id="login-modal-button">Login with Google</a>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="login-modal">
+        <div class="modal-content">
+            <h3>Login Required</h3>
+            <p>You must be logged in to use this feature.</p>
+            <!-- Link updated to be relative -->
+            <a href="/auth/google" class="modal-button">Login with Google</a>
         </div>
     </div>
 
@@ -313,106 +423,101 @@
 <script>
         // --- Globals ---
         let IS_LOGGED_IN = false;
-        const BASE_URL = "http://localhost:3000";
+        const BASE_URL = ''; // Use relative paths
 
         // --- Get All Elements ---
+        const loginModal = document.getElementById('login-modal');
+        
+        // Tab elements
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Analyzer Tab elements
         const textInput = document.getElementById('text-input');
-        const explainButton = document.getElementById('explain-button');
-        const quizButton = document.getElementById('quiz-button');
+        const summarizeButton = document.getElementById('summarize-button');
+        const solutionButton = document.getElementById('solution-button');
         const outputArea = document.getElementById('output-area');
-        
-        const chatWindow = document.getElementById('chat-window');
-        const chatInput = document.getElementById('chat-input');
-        const sendButton = document.getElementById('send-button');
-        
         const historyList = document.getElementById('history-list');
         const clearHistoryButton = document.getElementById('clear-history');
 
-        const loginModalOverlay = document.getElementById('login-modal-overlay');
-        const loginModal = document.getElementById('login-modal');
+        // Q&A Chat Tab elements
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-button');
 
-        // --- 1. Check Login Status On Page Load ---
+        // Header elements
+        const userGreeting = document.getElementById('user-greeting');
+        const loginButton = document.getElementById('login-button');
+        const logoutButton = document.getElementById('logout-button');
+
+        // --- Tab Navigation ---
+        function openTab(event, tabName) {
+            tabContents.forEach(content => content.classList.remove('active'));
+            tabButtons.forEach(button => button.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // --- Main Startup Function ---
         document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Check login status
             try {
-                // Use absolute URL for fetch
                 const res = await fetch(`${BASE_URL}/api/user`);
-                const data = await res.json();
+                if (!res.ok) throw new Error('Not logged in');
                 
-                const userGreeting = document.getElementById('user-greeting');
-                const loginButton = document.getElementById('login-button');
-                const logoutButton = document.getElementById('logout-button');
-
+                const data = await res.json();
                 if (data.user) {
-                    // User IS logged in
                     IS_LOGGED_IN = true;
                     userGreeting.textContent = `Hi, ${data.user.firstName}`;
                     userGreeting.style.display = 'inline';
                     loginButton.style.display = 'none';
                     logoutButton.style.display = 'inline-block';
-                    loadHistory(); // Load history now that we are logged in
                 } else {
-                    // User is NOT logged in
                     IS_LOGGED_IN = false;
                     userGreeting.style.display = 'none';
                     loginButton.style.display = 'inline-block';
                     logoutButton.style.display = 'none';
-                    showLoginModal(true); // Show the login popup
                 }
             } catch (error) {
                 console.error('Error fetching user status:', error);
                 IS_LOGGED_IN = false;
-                showLoginModal(true); // Show login popup on error
+                userGreeting.style.display = 'none';
+                loginButton.style.display = 'inline-block';
+                logoutButton.style.display = 'none';
             }
 
-            // --- 2. Setup Tab Listeners ---
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const tabName = button.getAttribute('data-tab');
-
-                    // Deactivate all
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    tabContents.forEach(content => content.classList.remove('active'));
-
-                    // Activate the one clicked
-                    button.classList.add('active');
-                    document.getElementById(tabName).classList.add('active');
-                });
-            });
-            
-            // Set default tab
-            document.querySelector('.tab-button[data-tab="analyzer"]').click();
+            // 2. Load history
+            loadHistory();
         });
 
-        // --- 3. Security Modal ---
-        function showLoginModal(show) {
-            if (show) {
-                loginModalOverlay.style.display = 'flex';
-                setTimeout(() => {
-                    loginModal.style.transform = 'scale(1)';
-                    loginModal.style.opacity = '1';
-                }, 10);
-            } else {
-                loginModalOverlay.style.display = 'none';
-                loginModal.style.transform = 'scale(0.9)';
-                loginModal.style.opacity = '0';
+        // --- Security Check ---
+        function checkAuth() {
+            if (!IS_LOGGED_IN) {
+                loginModal.style.display = 'flex';
+                return false;
             }
+            return true;
         }
-        
-        // --- 4. Analyzer Tab Functions ---
-        explainButton.addEventListener('click', () => {
-            if (!IS_LOGGED_IN) return showLoginModal(true);
+        // Hide modal if user clicks outside
+        loginModal.addEventListener('click', (e) => {
+            if (e.target === loginModal) {
+                loginModal.style.display = 'none';
+            }
+        });
+
+
+        // --- Analyzer Tab Functions ---
+        summarizeButton.addEventListener('click', () => {
+            if (!checkAuth()) return; // Security Check
             const text = textInput.value;
-            const prompt = "Summarize the following text in a few bullet points:";
+            const prompt = "Summarize the following text in one or two bullet points:";
             generateContent(text, prompt);
         });
 
-        quizButton.addEventListener('click', () => {
-            if (!IS_LOGGED_IN) return showLoginModal(true);
+        solutionButton.addEventListener('click', () => {
+            if (!checkAuth()) return; // Security Check
             const text = textInput.value;
-            const prompt = "Based on this text, what is a likely solution or next step?";
+            const prompt = "Based on the following text, what is a likely solution or next step?";
             generateContent(text, prompt);
         });
 
@@ -426,26 +531,27 @@
             setControlsLoading(true);
 
             try {
-                // Use absolute URL for fetch
                 const response = await fetch(`${BASE_URL}/generate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text, prompt })
                 });
 
-                if (response.status === 401) { // 401 means "Unauthorized"
-                    showLoginModal(true);
-                    outputArea.innerHTML = `<div class="output-error">You must be logged in.</div>`;
-                    setControlsLoading(false);
-                    return;
+                if (!response.ok) {
+                    if (response.status === 401) { // 401 Unauthorized
+                        checkAuth(); // Show login modal
+                    }
+                    throw new Error('Server error');
                 }
 
                 const data = await response.json();
 
                 if (data.success) {
-                    outputArea.innerHTML = DOMPurify.sanitize(marked.parse(data.content));
+                    const formattedHtml = DOMPurify.sanitize(marked.parse(data.content));
+                    outputArea.innerHTML = `<div class="output-content">${formattedHtml}</div>`;
                     outputArea.style.fontStyle = 'normal'; 
-                    saveToHistory(text); // Save the *input text*
+                    // Save to history
+                    saveToHistory(text, data.content);
                 } else {
                     outputArea.innerHTML = `<div class="output-error">${data.content}</div>`;
                 }
@@ -456,14 +562,14 @@
             setControlsLoading(false);
         }
 
-        // --- 5. Q&A Chat Tab Functions ---
+        // --- Q&A Chat Tab Functions ---
         sendButton.addEventListener('click', handleChatSend);
         chatInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') { handleChatSend(); }
         });
 
         async function handleChatSend() {
-            if (!IS_LOGGED_IN) return showLoginModal(true);
+            if (!checkAuth()) return; // Security Check
             const message = chatInput.value.trim();
             if (message === "") return;
 
@@ -473,19 +579,17 @@
             setControlsLoading(true);
 
             try {
-                // Use absolute URL for fetch
                 const response = await fetch(`${BASE_URL}/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message })
                 });
-                
-                if (response.status === 401) {
-                    chatWindow.querySelector('.loading').remove();
-                    showLoginModal(true);
-                    addChatMessage("You must be logged in to chat.", 'buddy-error');
-                    setControlsLoading(false);
-                    return;
+
+                if (!response.ok) {
+                    if (response.status === 401) { // 401 Unauthorized
+                        checkAuth(); // Show login modal
+                    }
+                    throw new Error('Server error');
                 }
 
                 const data = await response.json();
@@ -525,55 +629,40 @@
             chatWindow.appendChild(messageElement);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
-
-        // --- 6. History Functions (Upgraded) ---
+        
+        // --- Analyzer History Functions ---
         function getHistory() {
             return JSON.parse(localStorage.getItem('nexaGrindHistory') || '[]');
         }
 
-        function saveToHistory(text) {
+        function saveToHistory(query, result) {
             const history = getHistory();
-            
-            // Create a short title for the summary
-            const title = text.split(' ').slice(0, 5).join(' ') + '...';
-            
-            const historyEntry = {
-                title: title,
-                content: text
+            const newEntry = {
+                id: Date.now(),
+                query: query,
+                result: result
             };
-
-            // Add new item to the *beginning* of the array
-            history.unshift(historyEntry);
-            const limitedHistory = history.slice(0, 20); // Keep last 20
+            history.unshift(newEntry); // Add new item to the top
+            const limitedHistory = history.slice(0, 20); // Keep only 20
             localStorage.setItem('nexaGrindHistory', JSON.stringify(limitedHistory));
-            
-            loadHistory();
+            loadHistory(); // Redraw the list
         }
 
         function loadHistory() {
             const history = getHistory();
             historyList.innerHTML = ''; // Clear the list
-            if (history.length === 0) {
-                historyList.innerHTML = '<div class="history-placeholder">Your history is empty.</div>';
-                return;
-            }
             
             history.forEach(entry => {
                 const details = document.createElement('details');
                 details.classList.add('history-item');
 
                 const summary = document.createElement('summary');
-                summary.textContent = entry.title;
-                
-                const content = document.createElement('p');
-                content.textContent = entry.content;
-                
-                // Add click event to load this text back into the text box
-                content.addEventListener('click', () => {
-                    textInput.value = entry.content;
-                    // Switch to the analyzer tab
-                    document.querySelector('.tab-button[data-tab="analyzer"]').click();
-                });
+                // Show the first 50 chars of the query as the heading
+                summary.textContent = entry.query.substring(0, 50) + (entry.query.length > 50 ? '...' : '');
+
+                const content = document.createElement('div');
+                // Show the formatted AI result when clicked
+                content.innerHTML = DOMPurify.sanitize(marked.parse(entry.result));
 
                 details.appendChild(summary);
                 details.appendChild(content);
@@ -583,16 +672,19 @@
         
         clearHistoryButton.addEventListener('click', () => {
             localStorage.removeItem('nexaGrindHistory');
-            loadHistory(); // Re-draw the (now empty) list
+            loadHistory(); // Redraw the empty list
         });
         
-        // --- General Loading State ---
+        // --- Helper to disable buttons during AI calls ---
         function setControlsLoading(isLoading) {
-            explainButton.disabled = isLoading;
-            quizButton.disabled = isLoading;
-            chatInput.disabled = isLoading;
+            // Analyzer tab
+            summarizeButton.disabled = isLoading;
+            solutionButton.disabled = isLoading;
+            // Chat tab
             sendButton.disabled = isLoading;
+            chatInput.disabled = isLoading;
         }
+
     </script>
 </body>
 </html>
