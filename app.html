@@ -346,8 +346,8 @@
                 if (data.success) {
                     // --- PROCESS SCORE/AUDIT DATA ---
                     const rawContent = data.content;
-                    const scoreMatch = rawContent.match(/^(\d+):/);
-                    const auditMatch = rawContent.match(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i);
+                    const scoreMatch = rawContent.match(/^(\d+):/); // For Risk Analysis
+                    const auditMatch = rawContent.match(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i); // For Audit Cost
                     
                     let finalContent = rawContent;
                     let infoCard = '';
