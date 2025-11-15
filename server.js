@@ -103,37 +103,21 @@ function ensureAuthenticated(req, res, next) {
 // 7. Serve frontend HTML pages (using relative paths)
 app.use(express.static(__dirname));
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
-});
-app.get("/app.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "app.html"));
-});
-app.get("/contact.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "contact.html"));
-});
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
+app.get("/app.html", (req, res) => res.sendFile(path.join(__dirname, "app.html")));
+app.get("/contact.html", (req, res) => res.sendFile(path.join(__dirname, "contact.html")));
 
 // 8. Google Login Routes
-app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-app.get(
-  "/auth/google/callback",
-  passport.authenticate("google", {
-    successRedirect: "/app.html", // Redirects to the app after success
-    failureRedirect: "/", // On failure, go back home
-  })
-);
-
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+app.get("/auth/google/callback", passport.authenticate("google", {
+    successRedirect: "/app.html", failureRedirect: "/",
+}));
 app.get("/auth/logout", (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
     res.redirect("/");
   });
 });
-
 app.get("/api/user", (req, res) => {
   if (req.isAuthenticated()) {
     res.json({
@@ -157,7 +141,7 @@ app.post("/generate", ensureAuthenticated, async (req, res) => {
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: fullPrompt }],
-      model: "openai/gpt-oss-20b:free",
+      model: "google/gemini-2.0-flash-exp:free",
     });
 
     const aiText = completion.choices[0].message.content;
@@ -168,6 +152,26 @@ app.post("/generate", ensureAuthenticated, async (req, res) => {
   }
 });
 
+// Subscription Audit Agent
+app.post("/audit-cost", ensureAuthenticated, async (req, res) => {
+    try {
+        const { text, prompt } = req.body;
+        const fullPrompt = `${prompt}: ${text}`;
+
+        const completion = await openai.chat.completions.create({
+            messages: [{ role: "user", content: fullPrompt }],
+            model: "google/gemini-2.0-flash-exp:free",
+        });
+
+        const aiText = completion.choices[0].message.content;
+        res.json({ success: true, content: aiText });
+    } catch (error) {
+        console.error("Error with audit AI:", error);
+        res.json({ success: false, content: "Error communicating with the Subscription Audit Agent." });
+    }
+});
+
+
 // Risk Analysis route
 app.post("/risk-analyze", ensureAuthenticated, async (req, res) => {
     try {
@@ -176,7 +180,7 @@ app.post("/risk-analyze", ensureAuthenticated, async (req, res) => {
 
         const completion = await openai.chat.completions.create({
             messages: [{ role: "user", content: fullPrompt }],
-            model: "openai/gpt-oss-20b:free",
+            model: "google/gemini-2.0-flash-exp:free",
         });
 
         const aiText = completion.choices[0].message.content;
@@ -195,7 +199,7 @@ app.post("/chat", ensureAuthenticated, async (req, res) => {
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: message }],
-      model: "openai/gpt-oss-20b:free",
+      model: "google/gemini-2.0-flash-exp:free",
     });
 
     const aiText = completion.choices[0].message.content;
