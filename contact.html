@@ -6,272 +6,91 @@
     <title>NexaGrind.AI – Contact Us</title>
     <style>
         :root {
-            --primary-color: #4a47a3;
-            --primary-light: #7d7aeb;
-            --bg-white: #ffffff;
-            --text-dark: #333;
-            --text-light: #555;
+            --primary-color: #4a47a3; --primary-light: #7d7aeb; --bg-white: #ffffff;
+            --bg-light: #f8f9fa; --text-dark: #333; --text-light: #555;
             --border-color: #e0e0e0;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: var(--text-dark);
-            overflow-x: hidden;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; }
         a { text-decoration: none; }
-        .container { 
-            max-width: 1100px; 
-            margin: 0 auto; 
-            padding: 0 20px; 
-        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
         
         /* --- Header --- */
         header {
-            background-color: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
+            padding: 20px 0; border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
-        .navbar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .logo { 
-            font-size: 1.5rem; 
-            font-weight: 700; 
-            color: var(--primary-color); 
-        }
-        .header-buttons { 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-        }
-        .nav-link {
-            font-weight: 500;
-            color: var(--text-light);
-            transition: color 0.3s ease;
-            font-size: 0.9rem;
-            display: none; /* Hide by default */
-        }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); }
+        .header-buttons { display: flex; align-items: center; gap: 15px; }
+        .nav-link { font-weight: 500; color: var(--text-dark); transition: color 0.3s ease; }
         .nav-link:hover { color: var(--primary-color); }
-        .nav-button {
-            background-color: var(--primary-color);
-            color: var(--bg-white);
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        .nav-button-active { 
-            background-color: #3a378a; 
-        }
-        .nav-button-logout { 
-            background-color: #aa2e2e; 
-            color: var(--bg-white); 
-        }
+        .nav-button { background-color: var(--primary-color); color: var(--bg-white); padding: 10px 15px; border-radius: 5px; font-weight: 500; }
+        .nav-button-active { background-color: #3a378a; } 
+        .nav-button-logout { background-color: #aa2e2e; color: var(--bg-white); }
         .nav-button-logout:hover { background-color: #8a2a2a; }
-        .user-greeting { 
-            font-weight: 600; 
-            color: var(--text-dark); 
-            display: none; 
-            font-size: 0.9rem;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
-            max-width: 100px;
-        }
+        .user-greeting { font-weight: 600; color: var(--text-dark); display: none; margin-right: 5px; }
         
         /* --- Contact Page --- */
         .contact-container {
-            max-width: 700px;
-            margin: 30px auto; /* Reduced margin for mobile */
-            padding: 30px; /* Reduced padding for mobile */
-            background-color: var(--bg-white);
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
-            border: 1px solid var(--border-color);
-            text-align: center;
+            max-width: 700px; margin: 60px auto; padding: 40px; background-color: var(--bg-white);
+            border-radius: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+            border: 1px solid var(--border-color); text-align: center;
         }
         
-        .profile-image {
-            width: 120px; /* Smaller for mobile */
-            height: 120px;
-            border-radius: 50%; /* Makes it a circle */
-            object-fit: cover;
-            border: 4px solid var(--primary-color);
-            margin-bottom: 20px;
-        }
+        /* Your Photo Styles */
+        .profile-image { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color); margin-bottom: 20px; }
 
-        .contact-container h1 {
-            font-size: 2rem; /* Smaller for mobile */
-            color: var(--text-dark);
-            margin-bottom: 10px;
-        }
-        .contact-container .creator-title {
-            font-size: 1.1rem; /* Smaller for mobile */
-            font-weight: 500;
-            color: var(--primary-light);
-            margin-bottom: 25px;
-        }
-        .contact-container p {
-            font-size: 1rem; /* Smaller for mobile */
-            color: var(--text-light);
-            line-height: 1.7;
-            margin-bottom: 25px;
-        }
-        .contact-details {
-            list-style: none;
-            padding: 0;
-            margin-bottom: 25px;
-            text-align: left;
-            display: inline-block;
-        }
-        .contact-details li {
-            font-size: 1rem; /* Smaller for mobile */
-            color: var(--text-dark);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-        .contact-details svg {
-            width: 20px; /* Smaller for mobile */
-            height: 20px;
-            fill: var(--primary-color);
-            margin-right: 15px;
-            flex-shrink: 0;
-        }
-        .contact-details span {
-            word-break: break-all;
-        }
+        .contact-container h1 { font-size: 2.5rem; color: var(--text-dark); margin-bottom: 10px; }
+        .creator-title { font-size: 1.2rem; font-weight: 500; color: var(--primary-light); margin-bottom: 30px; }
+        .contact-container p { font-size: 1.1rem; color: var(--text-light); line-height: 1.7; margin-bottom: 30px; }
+        
+        .contact-details { list-style: none; padding: 0; margin-bottom: 30px; text-align: left; display: inline-block; }
+        .contact-details li { font-size: 1.1rem; color: var(--text-dark); margin-bottom: 15px; display: flex; align-items: center; }
+        .contact-details svg { width: 24px; height: 24px; fill: var(--primary-color); margin-right: 15px; flex-shrink: 0; }
 
-        /* Social Media "Buttons" */
-        .social-links {
-            display: flex;
-            flex-direction: column; /* Stack vertically on mobile */
-            justify-content: center;
-            gap: 15px; /* Reduced gap */
-        }
+        /* Social buttons */
+        .social-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
         .social-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center; /* Center text on mobile */
-            padding: 12px 15px; /* Smaller padding */
-            border-radius: 5px;
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: 1px solid var(--border-color);
-            font-size: 0.9rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 12px 20px; border-radius: 5px; background-color: var(--bg-light);
+            color: var(--text-dark); font-weight: 600; transition: all 0.3s ease;
+            border: 1px solid var(--border-color); font-size: 1rem;
         }
-        .social-button svg {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            fill: var(--text-dark);
-            transition: fill 0.3s ease;
-        }
-        .social-button:hover {
-            background-color: var(--primary-color);
-            color: var(--bg-white);
-            border-color: var(--primary-color);
-        }
-        .social-button:hover svg {
-            fill: var(--bg-white);
-        }
+        .social-button svg { width: 20px; height: 20px; margin-right: 10px; fill: var(--text-dark); transition: fill 0.3s ease; }
+        .social-button:hover { background-color: var(--primary-color); color: var(--bg-white); border-color: var(--primary-color); }
+        .social-button:hover svg { fill: var(--bg-white); }
 
-        footer { 
-            background-color: #333; 
-            color: #aaa; 
-            padding: 40px 20px; 
-            text-align: center; 
-            margin-top: 60px; 
-            font-size: 0.9rem;
-        }
-
-        /* --- Media Query for Desktop --- */
-        @media (min-width: 768px) {
-            .logo { 
-                font-size: 1.8rem; 
-            }
-            .header-buttons { 
-                gap: 20px; 
-            }
-            .nav-link { 
-                display: inline-block; /* Show text links */
-                font-size: 1.05rem;
-            }
-            .nav-button {
-                padding: 10px 20px;
-                font-size: 1rem;
-            }
-            .user-greeting {
-                font-size: 1rem;
-                max-width: 200px;
-            }
-            .contact-container {
-                margin: 60px auto;
-                padding: 40px;
-            }
-            .profile-image {
-                width: 150px;
-                height: 150px;
-            }
-            .contact-container h1 {
-                font-size: 2.5rem;
-            }
-            .contact-container .creator-title {
-                font-size: 1.2rem;
-            }
-            .contact-container p {
-                font-size: 1.1rem;
-            }
-            .contact-details li {
-                font-size: 1.1rem;
-            }
-            .social-links {
-                flex-direction: row; /* Side-by-side on desktop */
-                gap: 20px;
-            }
-            .social-button {
-                font-size: 1rem;
-                padding: 12px 20px;
-            }
+        footer { background-color: #333; color: #aaa; padding: 40px 0; text-align: center; margin-top: 60px; }
+        
+        /* --- Mobile Responsive --- */
+        @media (max-width: 600px) {
+            .contact-container { margin: 30px auto; padding: 20px; }
+            .profile-image { width: 120px; height: 120px; }
+            .contact-container h1 { font-size: 2rem; }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="container navbar">
-            <!-- All links are relative to work on Render -->
             <a href="/" class="logo">🧠 NexaGrind.AI</a>
             <div class="header-buttons">
                 <a href="/app.html" class="nav-link">Get Help</a>
                 <a href="/contact.html" class="nav-link nav-button-active">Contact Us</a>
                 
                 <span id="user-greeting" class="user-greeting"></span>
-                <a href="/auth/google" id="login-button" class="nav-button" style="display: none;">Login</a>
+                <a href="/auth/google" id="login-button" class="nav-button">Login</a>
                 <a href="/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>
             </div>
         </div>
     </header>
 
     <main class="contact-container">
-        <!-- 
-            HERE IS YOUR IMAGE!
-            I have put your image link in the `src` attribute.
-            It's "https://i.ibb.co/qLPp2TqM/image.png"
-            You can replace this with any other link if you change it.
-        -->
+        <!-- Your image link has been placed here -->
         <img src="https://i.ibb.co/qLPp2TqM/image.png" alt="Creator Photo" class="profile-image" 
-             onerror="this.style.display='none';"> <!-- Hides the image if the link breaks -->
+             onerror="this.style.display='none';">
 
         <h1>Aditya Ratre</h1>
         <div class="creator-title">Creator of NexaGrind.AI</div>
@@ -282,7 +101,6 @@
 
         <ul class="contact-details">
             <li>
-                <!-- Mail Icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,4H4C2.9,4,2,4.9,2,6v12c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V6C22,4.9,21.1,4,20,4z M20,8l-8,5L4,8V6l8,5l8-5V8z"/></svg>
                 <span>nexagrind@gmail.com</span>
             </li>
@@ -290,12 +108,10 @@
 
         <div class="social-links">
             <a href="https://www.instagram.com/nexagrindyt" target="_blank" rel="noopener noreferrer" class="social-button">
-                <!-- Instagram Icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2,22,4.6,22,7.8V16.2C22,19.4,19.4,22,16.2,22H7.8C4.6,22,2,19.4,2,16.2V7.8C2,4.6,4.6,2,7.8,2M7.6,4A3.6,3.6,0,0,0,4,7.6V16.4A3.6,3.6,0,0,0,7.6,20H16.4A3.6,3.6,0,0,0,20,16.4V7.6A3.6,3.6,0,0,0,16.4,4H7.6M17.2,6A1.2,1.2,0,1,0,18.4,7.2,1.2,1.2,0,0,0,17.2,6M12,7A5,5,0,1,0,17,12,5,5,0,0,0,12,7M12,9A3,3,0,1,1,9,12,3,3,0,0,1,12,9Z"/></svg>
                 NexaGrind Instagram
             </a>
             <a href="https://www.instagram.com/mr.aditya_ratre" target="_blank" rel="noopener noreferrer" class="social-button">
-                <!-- Person Icon (for Owner) -->
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,12A5,5,0,1,0,7,7A5,5,0,0,0,12,12M12,14A3,3,0,1,1,15,17A3,3,0,0,1,12,14M12,2A10,10,0,0,0,2,12A10,10,0,0,0,12,22A10,10,0,0,0,22,12A10,10,0,0,0,12,2Z"/></svg>
                 Owner's Instagram
             </a>
@@ -309,13 +125,11 @@
     </footer>
 
     <script>
-        // This script checks if you are logged in
+        // --- Authentication Check Script (To update header) ---
         document.addEventListener('DOMContentLoaded', async () => {
-            const BASE_URL = ''; // Use relative paths
             try {
-                const res = await fetch(`${BASE_URL}/api/user`);
-                if (!res.ok) throw new Error('Not logged in');
-                
+                // Use relative path for all fetch requests
+                const res = await fetch('/api/user'); 
                 const data = await res.json();
                 
                 if (data.user) {
@@ -332,9 +146,6 @@
                 }
             } catch (error) {
                 console.error('Error fetching user status:', error);
-                document.getElementById('user-greeting').style.display = 'none';
-                document.getElementById('login-button').style.display = 'inline-block';
-                document.getElementById('logout-button').style.display = 'none';
             }
         });
     </script>

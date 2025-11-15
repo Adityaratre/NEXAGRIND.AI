@@ -5,327 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexaGrind.AI – Get Help</title>
     
-    <!-- Scripts to translate the **symbols** -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
-</head>
-<body>
-    <!-- Header -->
-    <header>
-        <div class="container navbar">
-            <!-- Link updated to be relative -->
-            <a href="/" class="logo">🧠 NexaGrind.AI</a>
-            <div class="header-buttons">
-                <!-- Links updated to be relative -->
-                <a href="/app.html" class="nav-link nav-button-active">Get Help</a>
-                <a href="/contact.html" class="nav-link">Contact Us</a>
-                
-                <span id="user-greeting" class="user-greeting"></span>
-                <!-- Links updated to be relative -->
-                <a href="/auth/google" id="login-button" class="nav-button" style="display: none;">Login</a>
-                <a href="/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>
-            </div>
-        </div>
-    </header>
-<style>
+
+    <style>
         :root {
             --primary-color: #4a47a3; --primary-light: #7d7aeb; --bg-light: #f8f9fa;
             --bg-white: #ffffff; --text-dark: #333; --text-light: #555;
             --border-color: #e0e0e0; --error-color: #b91c1c;
+            --audit-color: #a0522d; /* Sienna for Audit */
+            --risk-color: #a5001a; /* Dark Red for Risk */
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--bg-light); 
-            color: var(--text-dark); 
-            line-height: 1.6; 
-        }
-        .container { 
-            max-width: 1100px; 
-            margin: 0 auto; 
-            padding: 0 20px; 
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; overflow-x: hidden; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
         
-        /* --- Header --- */
+        /* --- Header FIX --- */
         header { 
-    /* CRITICAL FIX: Ensures the header sticks and is always on top */
-    background-color: var(--bg-white); /* Solid white background */
-    padding: 20px 0; 
-    border-bottom: 1px solid var(--border-color); 
-    position: sticky; 
-    top: 0; 
-    z-index: 1000; /* FORCES it to be the highest layer */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
-}
-        .navbar { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    /* Ensures the navbar content itself is positioned correctly */
-    background-color: var(--bg-white); 
-}
-        .nav-link:hover { 
-            color: var(--primary-color); 
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: var(--bg-white); 
+            padding: 20px 0; 
+            border-bottom: 1px solid var(--border-color); 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); 
         }
-        .nav-link.nav-button-active {
-             color: var(--primary-color);
-             font-weight: 600;
-        }
-        .nav-button { 
-            background-color: var(--primary-color); 
-            color: var(--bg-white); 
-            padding: 10px 20px; 
-            border-radius: 5px; 
-            font-weight: 500; 
-            text-decoration: none; 
-            border: none;
-            cursor: pointer;
-        }
-        .nav-button:hover { background-color: #3a378a; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); text-decoration: none;}
+        .header-buttons { display: flex; align-items: center; gap: 15px; padding-right: 10px; }
+        .nav-link { font-weight: 500; color: var(--text-dark); transition: color 0.3s ease; }
+        .nav-link:hover { color: var(--primary-color); }
+        .nav-button { background-color: var(--primary-color); color: var(--bg-white); padding: 10px 15px; border-radius: 5px; font-weight: 500; text-decoration: none; }
+        .nav-button-active { background-color: #3a378a; } 
         .nav-button-logout { background-color: #aa2e2e; color: var(--bg-white); }
         .nav-button-logout:hover { background-color: #8a2a2a; }
-        .user-greeting { 
-            font-weight: 600; 
-            color: var(--text-dark); 
-            display: none; 
-            margin-right: 10px;
-        }
+        .user-greeting { font-weight: 600; color: var(--text-dark); display: none; margin-right: 5px; white-space: nowrap; }
 
         /* --- Tab Navigation --- */
-        .tab-nav {
-            display: flex;
-            gap: 10px;
-            border-bottom: 1px solid var(--border-color);
-            margin: 40px auto 0;
-            max-width: 1100px;
-            padding: 0 20px;
-        }
-        .tab-button {
-            padding: 15px 25px;
-            cursor: pointer;
-            background: none;
-            border: none;
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: var(--text-light);
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-        .tab-button:hover {
-            color: var(--text-dark);
-        }
-        .tab-button.active {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-        }
+        .tab-nav { display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); margin: 40px auto 0; max-width: 1100px; padding: 0 20px; }
+        .tab-button { padding: 15px 25px; cursor: pointer; background: none; border: none; font-size: 1.1rem; font-weight: 500; color: var(--text-light); border-bottom: 3px solid transparent; transition: all 0.3s ease; }
+        .tab-button:hover { color: var(--text-dark); }
+        .tab-button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
 
         /* --- Tab Content --- */
-        .tab-content {
-            display: none;
-            padding: 40px 0;
-            animation: fadeIn 0.5s ease;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        .tab-content { display: none; padding: 40px 0; animation: fadeIn 0.5s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .app-container { 
-            display: grid; 
-            grid-template-columns: 2fr 1fr; 
-            gap: 30px; 
-            align-items: start; /* Fixes the layout bug */
-        }
+        /* LAYOUT FIX: Adjusted grid columns to 3fr 1fr for history */
+        .app-container { display: grid; grid-template-columns: 3fr 1fr; gap: 30px; align-items: start; }
         
-        /* --- Left Panel (Input) --- */
-        .input-panel {
-            background: var(--bg-white); 
-            border-radius: 8px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); 
-            border: 1px solid var(--border-color);
-            padding: 30px;
-        }
+        /* --- Panels --- */
+        .input-panel, .right-panel { background: var(--bg-white); border-radius: 8px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); border: 1px solid var(--border-color); padding: 30px; }
         .input-panel h2 { font-size: 1.5rem; margin-bottom: 15px; color: var(--text-dark); }
         #text-input { width: 100%; height: 200px; font-family: Arial, sans-serif; font-size: 1rem; padding: 15px; border-radius: 5px; border: 1px solid var(--border-color); margin-bottom: 15px; resize: vertical; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
         .control-button { padding: 12px; font-size: 0.95rem; font-weight: 600; border: none; border-radius: 5px; cursor: pointer; transition: all 0.3s ease; }
         .control-button:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-explain { background-color: #e0e7ff; color: #3730a3; }
-        .btn-explain:hover:not(:disabled) { background-color: #c7d2fe; }
-        .btn-quiz { background-color: #d1fae5; color: #065f46; }
-        .btn-quiz:hover:not(:disabled) { background-color: #a7f3d0; }
-        #output-area { background-color: var(--bg-light); border-radius: 5px; padding: 20px; min-height: 200px; color: var(--text-light); overflow-y: auto; font-style: italic; white-space: pre-wrap; }
-        .output-content { font-style: normal; font-size: 0.95rem; }
-        .output-loading { font-style: italic; color: var(--text-light); }
-        .output-error { font-style: normal; font-weight: 600; color: var(--error-color); }
+        #solution-button { background-color: #c7d2fe; color: #3730a3; }
+        #risk-button { background-color: #f7d2d7; color: var(--risk-color); }
+        #audit-button { background-color: #ffe6a7; color: var(--audit-color); }
+
+        #output-area { background-color: var(--bg-light); border-radius: 5px; padding: 20px; min-height: 150px; color: var(--text-light); overflow-y: auto; }
         
-        /* --- Right Panel (History / Chat) --- */
-        .right-panel {
+        /* --- Right Panel Fixes (History) --- */
+        .right-panel { position: sticky; top: 120px; }
+        .history-item { border: 1px solid var(--border-color); border-radius: 5px; margin-bottom: 10px; overflow: hidden; }
+        .history-item summary { padding: 12px 15px; cursor: pointer; font-weight: 500; background-color: var(--bg-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .history-item div { padding: 15px; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; border-top: 1px solid var(--border-color); }
+
+        /* --- Chat FIX (Improved Layout) --- */
+        #chat-window { background-color: var(--bg-light); border-radius: 5px; padding: 15px; overflow-y: auto; height: 400px; margin-bottom: 15px; }
+        .chat-message { margin-bottom: 15px; padding: 10px 14px; border-radius: 10px; max-width: 85%; word-wrap: break-word; }
+        .user-message { background-color: var(--primary-color); color: var(--bg-white); margin-left: auto; }
+        .buddy-message { background-color: #e0e0e0; color: var(--text-dark); margin-right: auto; }
+        .chat-input-area { display: flex; gap: 10px; align-items: center; } 
+        .chat-input-area input { flex-grow: 1; padding: 12px 15px; border-radius: 5px; border: 1px solid var(--border-color); } 
+
+        /* --- Login Modal FIX (Button Spacing) --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-content { 
             background: var(--bg-white); 
+            padding: 30px 40px; 
             border-radius: 8px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); 
-            border: 1px solid var(--border-color);
-            padding: 30px;
-            /* This makes the panel "sticky" when you scroll */
-            position: sticky;
-            top: 120px; 
+            text-align: center; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); 
+        }
+        .modal-content p { 
+            /* FIX: Pushes button down to prevent overlap */
+            margin-bottom: 20px; 
         }
 
-        /* --- History Panel (Inside Analyzer Tab) --- */
-        .history-panel h3 { 
-            font-size: 1.5rem; 
-            color: var(--text-dark);
-            margin-bottom: 10px;
+        /* --- FOOTER FIX --- */
+        footer { 
+            background-color: #333; 
+            color: #aaa; 
+            padding: 40px 0; 
+            text-align: center; /* FIX: Centers the text */
+            margin-top: 60px; 
         }
-        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        #clear-history { background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 0.9rem; }
-        #history-list { list-style: none; max-height: 400px; overflow-y: auto; }
-        
-        /* New ChatGPT-style history */
-        .history-item {
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
-        .history-item summary {
-            padding: 12px 15px;
-            cursor: pointer;
-            font-weight: 500;
-            background-color: var(--bg-light);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .history-item summary:hover {
-            background-color: #e9ecef;
-        }
-        .history-item div {
-            padding: 15px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            white-space: pre-wrap; /* Preserves formatting */
-            max-height: 200px;
-            overflow-y: auto;
-            background-color: var(--bg-white);
-            border-top: 1px solid var(--border-color);
-        }
-        #history-list:empty::after {
-            content: 'Your history is empty.';
-            color: var(--text-light);
-            font-style: italic;
-        }
-
-
-        /* --- Chat Panel (Inside Q&A Tab) --- */
-        .chat-panel h3 { font-size: 1.5rem; margin-bottom: 15px; color: var(--text-dark); text-align: left; }
-        #chat-window { 
-            background-color: var(--bg-white); 
-            border: 1px solid var(--border-color); 
-            border-radius: 5px; 
-            padding: 15px; 
-            overflow-y: auto; 
-            height: 400px; /* Fixed height for chat */
-            margin-bottom: 15px; 
-        }
-        .chat-message { margin-bottom: 15px; padding: 10px 14px; border-radius: 10px; max-width: 80%; line-height: 1.4; word-wrap: break-word; }
-        .user-message { background-color: var(--primary-color); color: var(--bg-white); margin-left: auto; border-bottom-right-radius: 0; }
-        .buddy-message { background-color: #e0e0e0; color: var(--text-dark); margin-right: auto; border-bottom-left-radius: 0; white-space: pre-wrap; }
-        .buddy-message.loading { font-style: italic; color: var(--text-light); }
-        .buddy-message.error { background-color: #fef2f2; color: var(--error-color); font-weight: 600; }
-        .chat-input-area { display: flex; gap: 10px; }
-        #chat-input { flex-grow: 1; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 1rem; }
-        #chat-input:disabled { background-color: #f1f1f1; }
-        #send-button { padding: 12px 20px; font-size: 1rem; font-weight: 600; background-color: var(--primary-color); color: var(--bg-white); border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; }
-        #send-button:disabled { opacity: 0.5; cursor: not-allowed; }
-        #send-button:hover:not(:disabled) { background-color: #3a378a; }
-        
-        /* --- Login Modal --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            display: none; /* Hidden by default */
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-        .modal-content {
-            background: var(--bg-white);
-            padding: 30px 40px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s ease;
-        }
-        .modal-content h3 { font-size: 1.5rem; margin-bottom: 15px; }
-        .modal-content p { margin-bottom: 25px; color: var(--text-light); }
-        .modal-button {
-            background-color: var(--primary-color);
-            color: var(--bg-white);
-            padding: 12px 25px;
-            border-radius: 5px;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
-        }
-        .modal-button:hover { background-color: #3a378a; }
-
-        /* --- Footer --- */
-        footer { background-color: #333; color: #aaa; padding: 40px 0; text-align: center; margin-top: 60px; }
-
-        /* --- Mobile Responsive --- */
+        /* --- Mobile Responsive FIXES --- */
         @media (max-width: 900px) { 
-            .app-container { grid-template-columns: 1fr; } 
-            .right-panel { 
-                position: static; /* Un-stick the panel on mobile */
-                margin-top: 0; /* No top margin since it's in the tab */
-            }
-            .tab-nav { margin-top: 20px; }
-            #analyzer-container, #chat-container {
-                grid-template-columns: 1fr;
-            }
-            #analyzer-container .right-panel {
-                margin-top: 30px; /* Add margin back for analyzer tab */
-            }
+            .app-container { grid-template-columns: 1fr; gap: 20px; } 
+            .right-panel { position: static; margin-top: 0; }
+            .controls { grid-template-columns: 1fr 1fr; } 
         }
-        @media (max-width: 768px) { 
+        @media (max-width: 600px) {
+            .navbar { flex-direction: column; gap: 10px; }
+            .header-buttons { justify-content: center; width: 100%; }
             .controls { grid-template-columns: 1fr; } 
-            .header-buttons {
-                gap: 10px;
-            }
-            .nav-link { display: none; }
-            .user-greeting { display: none; }
-        }
-        @media (max-width: 480px) {
-            .logo { font-size: 1.5rem; }
-            .nav-button { padding: 8px 12px; font-size: 0.9rem; }
-            .tab-button { padding: 12px 15px; font-size: 1rem; }
-            .input-panel, .right-panel { padding: 20px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header>
         <div class="container navbar">
-            <!-- Link updated to be relative -->
             <a href="/" class="logo">🧠 NexaGrind.AI</a>
             <div class="header-buttons">
-                <!-- Links updated to be relative -->
                 <a href="/app.html" class="nav-link nav-link-active">Get Help</a>
                 <a href="/contact.html" class="nav-link">Contact Us</a>
                 
                 <span id="user-greeting" class="user-greeting"></span>
-                <!-- Links updated to be relative -->
                 <a href="/auth/google" id="login-button" class="nav-button">Login</a>
                 <a href="/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>
             </div>
@@ -340,64 +141,54 @@
 
     <main>
         <!-- Analyzer Tab -->
-        <div id="analyzer" class="tab-content active">
+        <section id="analyzer" class="tab-content active">
             <div class="container app-container" id="analyzer-container">
-                <!-- Left Panel (Input) -->
+                <!-- Left Panel (Input & Output) -->
                 <div class="input-panel">
                     <h2>Analyze Your Text</h2>
-                    <textarea id="text-input" placeholder="Paste your user ticket, notes, or any text here..."></textarea>
+                    <textarea id="text-input" placeholder="Paste your text here for summarizing or analysis..."></textarea>
+                    
+                    <!-- New Buttons -->
                     <div class="controls">
                         <button class="control-button btn-explain" id="summarize-button">Summarize</button>
-                        <button class="control-button btn-quiz" id="solution-button">Find Solution</button>
+                        <button class="control-button" id="audit-button">Audit Cost</button>
+                        <button class="control-button" id="solution-button">Find Solution</button>
+                        <button class="control-button btn-quiz" id="risk-button">Analyze Risk</button>
                     </div>
+
                     <div id="output-area">
-                        <p>Your AI-generated summaries and solutions will appear here.</p>
+                        <p>Results will appear here.</p>
                     </div>
                 </div>
 
                 <!-- Right Panel (History) -->
-                <div class="right-panel history-panel">
+                <aside class="right-panel">
                     <div class="history-header">
-                        <h3>History</h3>
+                        <h3 style="margin:0; font-size:1.25rem;">History</h3>
                         <button id="clear-history">Clear All</button>
                     </div>
                     <div id="history-list">
-                        <!-- History items will be added here by JavaScript -->
+                        <!-- History items populated by JavaScript -->
                     </div>
-                </div>
+                </aside>
             </div>
-        </div>
+        </section>
 
         <!-- Q&A Chat Tab -->
-        <div id="chat" class="tab-content">
-            <div class="container app-container" id="chat-container">
-                <!-- Left Panel (Chat) -->
+        <section id="chat" class="tab-content">
+            <div class="container app-container" id="chat-container" style="grid-template-columns: 1fr;">
                 <div class="input-panel chat-panel">
                     <h3>Q&A Chat</h3>
                     <div id="chat-window">
-                        <div class="chat-message buddy-message">
-                            Hi there! Ask me any follow-up questions.
-                        </div>
+                        <div class="chat-message buddy-message">Hi there! Ask me any follow-up questions.</div>
                     </div>
                     <div class="chat-input-area">
                         <input type="text" id="chat-input" placeholder="Ask a question...">
                         <button id="send-button">Send</button>
                     </div>
                 </div>
-
-                <!-- Right Panel (Info) -->
-                <div class="right-panel">
-                    <h3>How to use chat</h3>
-                    <p>This chat is a direct line to the AI. It's perfect for:</p>
-                    <ul style="padding-left: 20px; margin-top: 15px; color: var(--text-light);">
-                        <li>Asking follow-up questions.</li>
-                        <li>Getting a second opinion.</li>
-                        <li>Drafting a quick email.</li>
-                        <li>Brainstorming ideas.</li>
-                    </ul>
-                </div>
             </div>
-        </div>
+        </section>
     </main>
 
     <!-- Login Modal -->
@@ -405,31 +196,30 @@
         <div class="modal-content">
             <h3>Login Required</h3>
             <p>You must be logged in to use this feature.</p>
-            <!-- Link updated to be relative -->
-            <a href="/auth/google" class="modal-button">Login with Google</a>
+            <a href="/auth/google" class="nav-button">Login with Google</a>
         </div>
     </div>
 
     <footer>
-        <div class="container">
-            <p>&copy; 2025 NexaGrind.AI. All rights reserved.</p>
-        </div>
+        <div class="container"><p>&copy; 2025 NexaGrind.AI. All rights reserved.</p></div>
     </footer>
-<script>
+
+    <script>
         // --- Globals ---
         let IS_LOGGED_IN = false;
-        const BASE_URL = ''; // Use relative paths
+        let USER_EMAIL = null; 
+        const BASE_URL = ''; 
 
         // --- Get All Elements ---
         const loginModal = document.getElementById('login-modal');
-        
-        // Tab elements
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
-
+        
         // Analyzer Tab elements
         const textInput = document.getElementById('text-input');
         const summarizeButton = document.getElementById('summarize-button');
+        const auditButton = document.getElementById('audit-button');
+        const riskButton = document.getElementById('risk-button');
         const solutionButton = document.getElementById('solution-button');
         const outputArea = document.getElementById('output-area');
         const historyList = document.getElementById('history-list');
@@ -439,53 +229,49 @@
         const chatWindow = document.getElementById('chat-window');
         const chatInput = document.getElementById('chat-input');
         const sendButton = document.getElementById('send-button');
-
+        
         // Header elements
         const userGreeting = document.getElementById('user-greeting');
         const loginButton = document.getElementById('login-button');
         const logoutButton = document.getElementById('logout-button');
-
+        
         // --- Tab Navigation ---
-        function openTab(event, tabName) {
-            tabContents.forEach(content => content.classList.remove('active'));
-            tabButtons.forEach(button => button.classList.remove('active'));
+        function openTab(evt, tabName) {
+            tabContents.forEach(c => { c.style.display = 'none'; c.classList.remove('active'); });
+            tabButtons.forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).style.display = 'block';
             document.getElementById(tabName).classList.add('active');
-            event.currentTarget.classList.add('active');
+            evt.currentTarget.classList.add('active');
         }
 
-        // --- Main Startup Function ---
+        // --- Core Startup Function ---
         document.addEventListener('DOMContentLoaded', async () => {
             // 1. Check login status
             try {
-                const res = await fetch(`${BASE_URL}/api/user`);
-                if (!res.ok) throw new Error('Not logged in');
-                
+                const res = await fetch('/api/user');
                 const data = await res.json();
+                
                 if (data.user) {
                     IS_LOGGED_IN = true;
+                    USER_EMAIL = data.user.email; 
                     userGreeting.textContent = `Hi, ${data.user.firstName}`;
                     userGreeting.style.display = 'inline';
                     loginButton.style.display = 'none';
                     logoutButton.style.display = 'inline-block';
                 } else {
                     IS_LOGGED_IN = false;
-                    userGreeting.style.display = 'none';
+                    USER_EMAIL = null;
                     loginButton.style.display = 'inline-block';
                     logoutButton.style.display = 'none';
                 }
             } catch (error) {
-                console.error('Error fetching user status:', error);
-                IS_LOGGED_IN = false;
-                userGreeting.style.display = 'none';
-                loginButton.style.display = 'inline-block';
-                logoutButton.style.display = 'none';
+                console.warn('Could not fetch user status:', error);
             }
 
-            // 2. Load history
             loadHistory();
         });
 
-        // --- Security Check ---
+        // --- Security Check & Controls ---
         function checkAuth() {
             if (!IS_LOGGED_IN) {
                 loginModal.style.display = 'flex';
@@ -495,110 +281,151 @@
         }
         // Hide modal if user clicks outside
         loginModal.addEventListener('click', (e) => {
-            if (e.target === loginModal) {
-                loginModal.style.display = 'none';
-            }
+            if (e.target === loginModal) loginModal.style.display = 'none';
         });
 
+        function setControlsLoading(isLoading) {
+            summarizeButton.disabled = isLoading;
+            auditButton.disabled = isLoading;
+            riskButton.disabled = isLoading;
+            solutionButton.disabled = isLoading;
+            sendButton.disabled = isLoading;
+            chatInput.disabled = isLoading;
+        }
 
-        // --- Analyzer Tab Functions ---
+        // --- Analyzer Tab Logic (BUTTON LISTENERS) ---
+
         summarizeButton.addEventListener('click', () => {
-            if (!checkAuth()) return; // Security Check
-            const text = textInput.value;
-            const prompt = "Summarize the following text in one or two bullet points:";
-            generateContent(text, prompt);
+            if (!checkAuth()) return;
+            const prompt = "Act as a professional analyst. Summarize the following complex document/text into three clear, actionable bullet points, formatted using Markdown for clarity:";
+            generateContent(textInput.value, prompt, '/generate');
         });
 
         solutionButton.addEventListener('click', () => {
-            if (!checkAuth()) return; // Security Check
-            const text = textInput.value;
-            const prompt = "Based on the following text, what is a likely solution or next step?";
-            generateContent(text, prompt);
+            if (!checkAuth()) return;
+            // CRITICAL FIX: Universal Problem Solver Prompt
+            const prompt = "Act as an Expert Consultant. Analyze the following request/problem in detail. Provide the most comprehensive, logical, and step-by-step solution possible, using markdown formatting (checklists, headers, or code blocks) for the ultimate actionable answer. Address all constraints mentioned by the user.";
+            generateContent(textInput.value, prompt, '/generate');
         });
 
-        async function generateContent(text, prompt) {
+        auditButton.addEventListener('click', () => {
+            if (!checkAuth()) return;
+            const prompt = "Act as a Financial Audit Agent. Based on the following service agreement or subscription text, return a single value for the MINIMUM TOTAL COST (in USD or local currency) on the first line, followed by a colon and a space (e.g., $120.00:), then provide the final analysis: 1. MINIMUM TOTAL COST (Calculate all non-optional charges for a minimum term), 2. CANCELLATION PENALTIES, 3. AUTO-RENEWAL DATE, and 4. PRICE INCREASE RISKS. Use clear markdown formatting:";
+            generateContent(textInput.value, prompt, '/audit-cost');
+        });
+        
+        riskButton.addEventListener('click', () => {
+            if (!checkAuth()) return;
+            const prompt = "Act as a Risk Analysis Agent. Based on the following document/text, return a FINAL CONFIDENCE SCORE from 1 to 100 on the first line, followed by a colon and a space (e.g., 85:), and then provide a clear, detailed risk summary. Identify key risks, uncertainties, or hidden costs, and format your response using Markdown bullets for clarity:";
+            generateContent(textInput.value, prompt, '/risk-analyze');
+        });
+
+        async function generateContent(text, prompt, endpoint) {
             if (text.trim() === "") {
-                outputArea.innerHTML = `<div class="output-error">Please paste some text first!</div>`;
+                outputArea.innerHTML = `<p style="color:var(--error-color); font-weight:600;">Please paste some text first!</p>`;
                 return;
             }
-
-            outputArea.innerHTML = `<div class="output-loading">🧠 Generating...</div>`;
+            outputArea.innerHTML = `<p style="font-style:italic; color:var(--text-light)">🧠 Generating... (This may take a moment for detailed analysis)</p>`;
             setControlsLoading(true);
 
             try {
-                const response = await fetch(`${BASE_URL}/generate`, {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text, prompt })
                 });
 
                 if (!response.ok) {
-                    if (response.status === 401) { // 401 Unauthorized
-                        checkAuth(); // Show login modal
-                    }
-                    throw new Error('Server error');
+                    if (response.status === 401) checkAuth();
+                    throw new Error('API Request Failed');
                 }
-
                 const data = await response.json();
 
                 if (data.success) {
-                    const formattedHtml = DOMPurify.sanitize(marked.parse(data.content));
-                    outputArea.innerHTML = `<div class="output-content">${formattedHtml}</div>`;
-                    outputArea.style.fontStyle = 'normal'; 
-                    // Save to history
-                    saveToHistory(text, data.content);
+                    // --- PROCESS SCORE/AUDIT DATA ---
+                    const rawContent = data.content;
+                    const scoreMatch = rawContent.match(/^(\d+):/); // For Risk Analysis
+                    const auditMatch = rawContent.match(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i); // For Audit Cost
+                    
+                    let finalContent = rawContent;
+                    let infoCard = '';
+
+                    // Risk Card Display
+                    if (endpoint === '/risk-analyze' && scoreMatch) {
+                        const score = parseInt(scoreMatch[1].trim(), 10);
+                        finalContent = rawContent.replace(/^(\d+):/, '').trim(); // Remove score from body
+
+                        let riskColor = 'var(--primary-color)';
+                        let riskLabel = 'Low Risk';
+                        if (score < 70) { riskColor = 'orange'; riskLabel = 'Medium Risk'; }
+                        if (score < 40) { riskColor = 'var(--error-color)'; riskLabel = 'High Risk'; }
+                        
+                        infoCard = `
+                            <div style="padding:15px; border-radius:8px; margin-bottom:15px; background-color: var(--bg-white); border-left: 5px solid ${riskColor}; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                                <div style="font-size:1.5rem; font-weight:700; color:${riskColor};">${score}% Confidence</div>
+                                <div style="font-size:0.9rem; color:var(--text-dark);">Assessment: ${riskLabel}</div>
+                            </div>
+                        `;
+                    } 
+                    // Audit Cost Display
+                    else if (endpoint === '/audit-cost' && auditMatch) {
+                        const cost = auditMatch[1].trim();
+                        finalContent = rawContent.replace(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i, '').trim();
+
+                        infoCard = `
+                            <div style="padding:15px; border-radius:8px; margin-bottom:15px; background-color: var(--bg-white); border-left: 5px solid var(--audit-color); box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                                <div style="font-size:1.5rem; font-weight:700; color:var(--audit-color);">Estimated Cost: ${cost}</div>
+                                <div style="font-size:0.9rem; color:var(--text-dark);">Minimum Obligation Calculated</div>
+                            </div>
+                        `;
+                    }
+                    // --- END PROCESSING ---
+
+                    const formattedHtml = DOMPurify.sanitize(marked.parse(finalContent));
+                    outputArea.innerHTML = infoCard + `<div class="output-content">${formattedHtml}</div>`;
+                    saveToHistory(text, rawContent, endpoint);
+
                 } else {
-                    outputArea.innerHTML = `<div class="output-error">${data.content}</div>`;
+                    outputArea.innerHTML = `<p style="color:var(--error-color); font-weight:600;">⚠️ ${data.content}</p>`;
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
-                outputArea.innerHTML = `<div class="output-error">⚠️ Error: Could not connect to the server. Is it running?</div>`;
+                outputArea.innerHTML = `<p style="color:var(--error-color); font-weight:600;">⚠️ Error: Could not connect to the server.</p>`;
             }
             setControlsLoading(false);
         }
 
-        // --- Q&A Chat Tab Functions ---
+        // --- Chat Tab Logic ---
         sendButton.addEventListener('click', handleChatSend);
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { handleChatSend(); }
-        });
+        chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleChatSend(); });
 
         async function handleChatSend() {
-            if (!checkAuth()) return; // Security Check
+            if (!checkAuth()) return;
             const message = chatInput.value.trim();
-            if (message === "") return;
-
-            addChatMessage(message, 'user');
-            chatInput.value = "";
-            addChatMessage("... typing", 'buddy-loading');
+            if (!message) return;
+            addChatMessage(message,'user');
+            chatInput.value = '';
+            addChatMessage('... typing','buddy-loading');
             setControlsLoading(true);
 
             try {
-                const response = await fetch(`${BASE_URL}/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                const response = await fetch('/chat', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
                     body: JSON.stringify({ message })
                 });
-
-                if (!response.ok) {
-                    if (response.status === 401) { // 401 Unauthorized
-                        checkAuth(); // Show login modal
-                    }
-                    throw new Error('Server error');
-                }
-
+                if (!response.ok) { if (response.status === 401) checkAuth(); throw new Error('server error'); }
                 const data = await response.json();
-                chatWindow.querySelector('.loading').remove();
+                const loading = chatWindow.querySelector('.loading');
+                if (loading) loading.remove();
 
-                if (data.success) {
-                    addChatMessage(data.reply, 'buddy');
-                } else {
-                    addChatMessage(data.reply, 'buddy-error');
-                }
-            } catch (error) {
-                console.error('Chat error:', error);
-                chatWindow.querySelector('.loading').remove();
-                addChatMessage("Error: Could not connect to the server.", 'buddy-error');
+                if (data.success) addChatMessage(data.reply,'buddy');
+                else addChatMessage(data.reply,'buddy-error');
+            } catch (err) {
+                console.error('Chat error:', err);
+                const loading = chatWindow.querySelector('.loading');
+                if (loading) loading.remove();
+                addChatMessage("Error communicating with AI.",'buddy-error');
             }
             setControlsLoading(false);
         }
@@ -606,7 +433,7 @@
         function addChatMessage(message, type) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('chat-message');
-
+            
             if (type === 'user') {
                 messageElement.classList.add('user-message');
                 messageElement.textContent = message; 
@@ -620,66 +447,68 @@
                 messageElement.classList.add('buddy-message', 'error');
                 messageElement.textContent = message;
             }
-            
             chatWindow.appendChild(messageElement);
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
+
+        // --- Analyzer History Functions (User-Specific Storage FIX) ---
+        function getHistoryKey() {
+            return USER_EMAIL ? `nexaGrindHistory_${USER_EMAIL.replace(/[^a-zA-Z0-9]/g, '_')}` : 'nexaGrindHistory_public';
+        }
+
+        function getHistory() { 
+            return JSON.parse(localStorage.getItem(getHistoryKey()) || '[]'); 
+        }
+
+        function saveToHistory(query, result, endpoint) {
+            if (!USER_EMAIL) return; // Don't save history if not logged in
+            const history = getHistory();
+            let type;
+            if (endpoint === '/risk-analyze') { type = 'Risk Analysis'; }
+            else if (endpoint === '/audit-cost') { type = 'Cost Audit'; }
+            else { type = 'Solution'; } // General solution/summary
+            
+            const newEntry = { id: Date.now(), query: query, result: result, type: type };
+            history.unshift(newEntry);
+            const limitedHistory = history.slice(0, 30);
+            localStorage.setItem(getHistoryKey(), JSON.stringify(limitedHistory));
+            loadHistory();
+        }
+
+        clearHistoryButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all history for this user?')) {
+                localStorage.removeItem(getHistoryKey());
+                loadHistory();
+            }
+        });
         
-        // --- Analyzer History Functions ---
-        function getHistory() {
-            return JSON.parse(localStorage.getItem('nexaGrindHistory') || '[]');
-        }
-
-        function saveToHistory(query, result) {
-            const history = getHistory();
-            const newEntry = {
-                id: Date.now(),
-                query: query,
-                result: result
-            };
-            history.unshift(newEntry); // Add new item to the top
-            const limitedHistory = history.slice(0, 20); // Keep only 20
-            localStorage.setItem('nexaGrindHistory', JSON.stringify(limitedHistory));
-            loadHistory(); // Redraw the list
-        }
-
         function loadHistory() {
+            if (!IS_LOGGED_IN) {
+                historyList.innerHTML = '<p style="color:var(--text-light); text-align:center;">Log in to view history.</p>';
+                return;
+            }
+
             const history = getHistory();
-            historyList.innerHTML = ''; // Clear the list
+            historyList.innerHTML = '';
             
             history.forEach(entry => {
                 const details = document.createElement('details');
                 details.classList.add('history-item');
 
                 const summary = document.createElement('summary');
-                // Show the first 50 chars of the query as the heading
-                summary.textContent = entry.query.substring(0, 50) + (entry.query.length > 50 ? '...' : '');
+                summary.textContent = `[${entry.type}] ${entry.query.substring(0, 40) + (entry.query.length > 40 ? '...' : '')}`;
 
                 const content = document.createElement('div');
-                // Show the formatted AI result when clicked
                 content.innerHTML = DOMPurify.sanitize(marked.parse(entry.result));
 
                 details.appendChild(summary);
                 details.appendChild(content);
                 historyList.appendChild(details);
             });
+            if (history.length === 0) {
+                 historyList.innerHTML = '<p style="color:var(--text-light); text-align:center;">No items analyzed yet.</p>';
+            }
         }
-        
-        clearHistoryButton.addEventListener('click', () => {
-            localStorage.removeItem('nexaGrindHistory');
-            loadHistory(); // Redraw the empty list
-        });
-        
-        // --- Helper to disable buttons during AI calls ---
-        function setControlsLoading(isLoading) {
-            // Analyzer tab
-            summarizeButton.disabled = isLoading;
-            solutionButton.disabled = isLoading;
-            // Chat tab
-            sendButton.disabled = isLoading;
-            chatInput.disabled = isLoading;
-        }
-
     </script>
 </body>
 </html>
