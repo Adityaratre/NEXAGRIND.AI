@@ -54,10 +54,41 @@
             border: 1px solid var(--border-color); padding: 30px; 
         }
         .input-panel h2 { font-size: 1.5rem; margin-bottom: 15px; color: var(--text-light); }
-        #text-input { 
+        
+        /* --- Text Input Container (For the Clear Button) --- */
+        .input-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        #text-input, #flow-input { 
             width: 100%; height: 200px; font-family: inherit; font-size: 1rem; padding: 15px; 
-            border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px; 
+            border-radius: 8px; border: 1px solid var(--border-color);
             resize: vertical; background: var(--bg-input); color: var(--text-light); 
+        }
+
+        /* --- Clear Button Style --- */
+        #clear-text-button, #clear-flow-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            line-height: 20px;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            display: none; /* Hidden until text is typed */
+            z-index: 10;
+        }
+        #clear-text-button:hover, #clear-flow-button:hover {
+            background: var(--error-color);
+            color: var(--text-light);
         }
 
         /* Button Grid */
@@ -72,8 +103,9 @@
         #solution-button { background-color: #4CAF50; color: var(--bg-white); }
         #risk-button { background-color: var(--risk-color); color: var(--bg-white); }
         #audit-button { background-color: var(--audit-color); color: var(--bg-white); }
+        #generate-flow-button { background-color: var(--primary-color); color: var(--bg-dark); }
 
-        #output-area { background-color: var(--bg-input); border-radius: 8px; padding: 20px; min-height: 150px; color: var(--text-light); border: 1px solid var(--border-color); }
+        #output-area, #flow-output-area { background-color: var(--bg-input); border-radius: 8px; padding: 20px; min-height: 150px; color: var(--text-light); border: 1px solid var(--border-color); }
         
         /* --- History / Right Panel --- */
         .right-panel { position: sticky; top: 100px; min-height: 200px; }
@@ -128,16 +160,22 @@
     <div class="tab-nav container">
         <button class="tab-button active" onclick="openTab(event, 'analyzer')">Analyzer</button>
         <button class="tab-button" onclick="openTab(event, 'chat')">Q&A Chat</button>
+        <button class="tab-button" onclick="openTab(event, 'flow')">Decision Flow</button>
     </div>
 
     <main>
-        <!-- Analyzer Tab -->
+        <!-- Tab 1: Analyzer Content -->
         <section id="analyzer" class="tab-content active">
             <div class="container app-container" id="analyzer-container">
                 <!-- Left Panel (Input & Output) -->
                 <div class="input-panel">
                     <h2>Analyze Your Text</h2>
-                    <textarea id="text-input" placeholder="Paste your text here for summarizing or analysis..."></textarea>
+                    
+                    <!-- Input Container for Clear Button -->
+                    <div class="input-container">
+                        <textarea id="text-input" placeholder="Paste your text here for summarizing or analysis..."></textarea>
+                        <button id="clear-text-button">X</button>
+                    </div>
                     
                     <!-- New Buttons -->
                     <div class="controls">
@@ -165,7 +203,7 @@
             </div>
         </section>
 
-        <!-- Q&A Chat Tab -->
+        <!-- Tab 2: Q&A Chat Content -->
         <section id="chat" class="tab-content">
             <div class="container app-container" id="chat-container" style="grid-template-columns: 1fr;">
                 <div class="input-panel chat-panel">
@@ -178,16 +216,42 @@
                         <button id="send-button">Send</button>
                     </div>
                 </div>
-                <!-- Right Panel (Info) - Stays single column on desktop -->
+            </div>
+        </section>
+
+        <!-- Tab 3: Decision Flow Content (The New Feature) -->
+        <section id="flow" class="tab-content">
+            <div class="container app-container" id="flow-container">
+                
+                <!-- Left Panel (Input & Output) - Matching Analyzer Layout -->
+                <div class="input-panel">
+                    <h2>Generate Decision Workflow</h2>
+                    <p style="color:var(--text-secondary); margin-bottom: 15px;">Use this agent to generate a structured, multi-step plan for any goal (e.g., "Build a full-stack Node.js app," "Write a research paper," etc.).</p>
+                    
+                    <!-- Input Container for Clear Button -->
+                    <div class="input-container">
+                        <textarea id="flow-input" placeholder="Example: What are the best steps to find the cheapest flights for my family vacation?"></textarea>
+                        <button id="clear-flow-button">X</button>
+                    </div>
+                    
+                    <div class="controls" style="grid-template-columns: 1fr;">
+                        <button class="control-button" id="generate-flow-button" style="background-color: var(--primary-color); color: var(--bg-dark);">Generate Action Flow</button>
+                    </div>
+                    
+                    <div id="flow-output-area" style="margin-top: 20px; padding: 20px; border-radius: 8px; background: var(--bg-input); min-height: 150px; color: var(--text-light); border: 1px solid var(--border-color);">
+                        <p style="color:var(--text-secondary);">Your step-by-step workflow will appear here.</p>
+                    </div>
+                </div>
+
+                <!-- Right Panel (History for Flow) -->
                 <aside class="right-panel">
-                    <h3>About the Chat</h3>
-                    <p style="color:var(--text-secondary); margin-top:10px;">This chat is your direct line to the Expert Consultant AI. It ensures you receive high-quality, actionable answers instantly, without delaying your workflow.</p>
-                    <h3 style="margin-top: 20px;">Use Cases:</h3>
-                    <ul style="padding-left: 20px; margin-top: 10px; color: var(--text-secondary);">
-                        <li>Ask for follow-up details on any analysis.</li>
-                        <li>Draft a quick, professional email response.</li>
-                        <li>Brainstorm solutions for a new problem.</li>
-                    </ul>
+                    <div class="history-header">
+                        <h3 style="margin:0; font-size:1.25rem;">Flow History</h3>
+                        <button id="clear-flow-history">Clear All</button>
+                    </div>
+                    <div id="flow-history-list">
+                        <!-- History items populated by JavaScript -->
+                    </div>
                 </aside>
             </div>
         </section>
@@ -223,6 +287,7 @@
         const auditButton = document.getElementById('audit-button');
         const riskButton = document.getElementById('risk-button');
         const solutionButton = document.getElementById('solution-button');
+        const clearTextButton = document.getElementById('clear-text-button'); // New Clear Button
         const outputArea = document.getElementById('output-area');
         const historyList = document.getElementById('history-list');
         const clearHistoryButton = document.getElementById('clear-history');
@@ -231,6 +296,14 @@
         const chatWindow = document.getElementById('chat-window');
         const chatInput = document.getElementById('chat-input');
         const sendButton = document.getElementById('send-button');
+
+        // Decision Flow Tab elements
+        const flowInput = document.getElementById('flow-input');
+        const clearFlowButton = document.getElementById('clear-flow-button');
+        const generateFlowButton = document.getElementById('generate-flow-button');
+        const flowOutputArea = document.getElementById('flow-output-area');
+        const flowHistoryList = document.getElementById('flow-history-list');
+        const clearFlowHistoryButton = document.getElementById('clear-flow-history');
         
         // Header elements
         const userGreeting = document.getElementById('user-greeting');
@@ -248,7 +321,7 @@
 
         // --- Core Startup Function ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // 1. Check login status
+            // Check login status
             try {
                 const res = await fetch('/api/user');
                 const data = await res.json();
@@ -271,6 +344,7 @@
             }
 
             loadHistory();
+            loadFlowHistory(); // Load flow history on startup
         });
 
         // --- Security Check & Controls ---
@@ -281,7 +355,6 @@
             }
             return true;
         }
-        // Hide modal if user clicks outside
         loginModal.addEventListener('click', (e) => {
             if (e.target === loginModal) loginModal.style.display = 'none';
         });
@@ -291,9 +364,31 @@
             auditButton.disabled = isLoading;
             riskButton.disabled = isLoading;
             solutionButton.disabled = isLoading;
+            generateFlowButton.disabled = isLoading;
             sendButton.disabled = isLoading;
             chatInput.disabled = isLoading;
+            flowInput.disabled = isLoading;
         }
+
+        // --- UX Fix: Clear Buttons ---
+        textInput.addEventListener('input', () => {
+            clearTextButton.style.display = textInput.value.length > 0 ? 'block' : 'none';
+        });
+        clearTextButton.addEventListener('click', () => {
+            textInput.value = '';
+            clearTextButton.style.display = 'none';
+            outputArea.innerHTML = '<p>Results will appear here.</p>';
+        });
+
+        flowInput.addEventListener('input', () => {
+            clearFlowButton.style.display = flowInput.value.length > 0 ? 'block' : 'none';
+        });
+        clearFlowButton.addEventListener('click', () => {
+            flowInput.value = '';
+            clearFlowButton.style.display = 'none';
+            flowOutputArea.innerHTML = '<p style="color:var(--text-secondary);">Your step-by-step workflow will appear here.</p>';
+        });
+
 
         // --- Analyzer Tab Logic (BUTTON LISTENERS) ---
 
@@ -305,7 +400,6 @@
 
         solutionButton.addEventListener('click', () => {
             if (!checkAuth()) return;
-            // CRITICAL FIX: Universal Problem Solver Prompt
             const prompt = "Act as an Expert Consultant. Analyze the following request/problem in detail. Provide the most comprehensive, logical, and step-by-step solution possible, using markdown formatting (checklists, headers, or code blocks) for the ultimate actionable answer. Address all constraints mentioned by the user.";
             generateContent(textInput.value, prompt, '/generate');
         });
@@ -346,8 +440,8 @@
                 if (data.success) {
                     // --- PROCESS SCORE/AUDIT DATA ---
                     const rawContent = data.content;
-                    const scoreMatch = rawContent.match(/^(\d+):/); // For Risk Analysis
-                    const auditMatch = rawContent.match(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i); // For Audit Cost
+                    const scoreMatch = rawContent.match(/^(\d+):/);
+                    const auditMatch = rawContent.match(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i);
                     
                     let finalContent = rawContent;
                     let infoCard = '';
@@ -396,6 +490,50 @@
             }
             setControlsLoading(false);
         }
+
+        // --- Decision Flow Tab Logic (NEW) ---
+        generateFlowButton.addEventListener('click', () => {
+            if (!checkAuth()) return;
+            const text = flowInput.value;
+            const prompt = "Act as a process engineer. Analyze the user's goal and return a comprehensive, structured, step-by-step workflow guide. The guide must include a main markdown header, clear phases (e.g., Planning, Execution), and a checklist of actions.";
+            generateFlowContent(text, prompt);
+        });
+
+        async function generateFlowContent(text, prompt) {
+            if (text.trim() === "") {
+                flowOutputArea.innerHTML = `<p style="color:var(--error-color); font-weight:600;">Please enter a problem or goal first!</p>`;
+                return;
+            }
+            flowOutputArea.innerHTML = `<p style="font-style:italic; color:var(--text-secondary)">🤖 Building Decision Flow...</p>`;
+            setControlsLoading(true);
+
+            try {
+                const response = await fetch('/generate', { // Reusing /generate route
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, prompt })
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) checkAuth();
+                    throw new Error('API Request Failed');
+                }
+                const data = await response.json();
+
+                if (data.success) {
+                    const formattedHtml = DOMPurify.sanitize(marked.parse(data.content));
+                    flowOutputArea.innerHTML = `<div class="output-content">${formattedHtml}</div>`;
+                    saveFlowHistory(text, data.content); // Save to dedicated flow history
+                } else {
+                    flowOutputArea.innerHTML = `<p style="color:var(--error-error-color); font-weight:600;">⚠️ ${data.content}</p>`;
+                }
+            } catch (error) {
+                console.error('Flow Fetch error:', error);
+                flowOutputArea.innerHTML = `<p style="color:var(--error-color); font-weight:600;">⚠️ Error: Could not connect to the server.</p>`;
+            }
+            setControlsLoading(false);
+        }
+
 
         // --- Chat Tab Logic ---
         sendButton.addEventListener('click', handleChatSend);
@@ -453,7 +591,7 @@
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        // --- Analyzer History Functions (User-Specific Storage FIX) ---
+        // --- HISTORY FUNCTIONS (General Analyzer History) ---
         function getHistoryKey() {
             return USER_EMAIL ? `nexaGrindHistory_${USER_EMAIL.replace(/[^a-zA-Z0-9]/g, '_')}` : 'nexaGrindHistory_public';
         }
@@ -463,12 +601,12 @@
         }
 
         function saveToHistory(query, result, endpoint) {
-            if (!USER_EMAIL) return; // Don't save history if not logged in
+            if (!USER_EMAIL) return; 
             const history = getHistory();
             let type;
             if (endpoint === '/risk-analyze') { type = 'Risk Analysis'; }
             else if (endpoint === '/audit-cost') { type = 'Cost Audit'; }
-            else { type = 'Solution'; } // General solution/summary
+            else { type = 'Solution'; } 
             
             const newEntry = { id: Date.now(), query: query, result: result, type: type };
             history.unshift(newEntry);
@@ -478,7 +616,7 @@
         }
 
         clearHistoryButton.addEventListener('click', () => {
-            if (confirm('Are you sure you want to clear all history for this user?')) {
+            if (confirm('Are you sure you want to clear Analyzer History?')) {
                 localStorage.removeItem(getHistoryKey());
                 loadHistory();
             }
@@ -509,6 +647,61 @@
             });
             if (history.length === 0) {
                  historyList.innerHTML = '<p style="color:var(--text-secondary); text-align:center;">No items analyzed yet.</p>';
+            }
+        }
+        
+        // --- HISTORY FUNCTIONS (Decision Flow History) ---
+        function getFlowHistoryKey() {
+            return USER_EMAIL ? `nexaGrindFlowHistory_${USER_EMAIL.replace(/[^a-zA-Z0-9]/g, '_')}` : 'nexaGrindFlowHistory_public';
+        }
+
+        function getFlowHistory() { 
+            return JSON.parse(localStorage.getItem(getFlowHistoryKey()) || '[]'); 
+        }
+
+        function saveFlowHistory(query, result) {
+            if (!USER_EMAIL) return; 
+            const history = getFlowHistory();
+            
+            const newEntry = { id: Date.now(), query: query, result: result, type: 'Workflow' };
+            history.unshift(newEntry);
+            const limitedHistory = history.slice(0, 30);
+            localStorage.setItem(getFlowHistoryKey(), JSON.stringify(limitedHistory));
+            loadFlowHistory();
+        }
+
+        clearFlowHistoryButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear Flow History?')) {
+                localStorage.removeItem(getFlowHistoryKey());
+                loadFlowHistory();
+            }
+        });
+        
+        function loadFlowHistory() {
+            if (!IS_LOGGED_IN) {
+                flowHistoryList.innerHTML = '<p style="color:var(--text-secondary); text-align:center;">Log in to view history.</p>';
+                return;
+            }
+
+            const history = getFlowHistory();
+            flowHistoryList.innerHTML = '';
+            
+            history.forEach(entry => {
+                const details = document.createElement('details');
+                details.classList.add('history-item');
+
+                const summary = document.createElement('summary');
+                summary.textContent = `[Flow] ${entry.query.substring(0, 40) + (entry.query.length > 40 ? '...' : '')}`;
+
+                const content = document.createElement('div');
+                content.innerHTML = DOMPurify.sanitize(marked.parse(entry.result));
+
+                details.appendChild(summary);
+                details.appendChild(content);
+                flowHistoryList.appendChild(details);
+            });
+            if (history.length === 0) {
+                 flowHistoryList.innerHTML = '<p style="color:var(--text-secondary); text-align:center;">No workflows generated yet.</p>';
             }
         }
     </script>
