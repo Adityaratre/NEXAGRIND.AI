@@ -13,9 +13,12 @@
             --primary-color: #00bcd4; --primary-light: #4dd0e1;
             --bg-dark: #121212; --bg-card: #1f1f1f; --bg-input: #282828; 
             --text-light: #f0f0f0; --text-secondary: #a0a0a0; --border-color: #333333;
-            --error-color: #ff6b6b; --shadow-color: rgba(0, 188, 212, 0.4); 
+            --error-color: #ff6b6b; /* CRITICAL RED */
+            --shadow-color: rgba(0, 188, 212, 0.4); 
             
-            --audit-color: #ffc107; --risk-color: #ff6b6b; --solution-color: #4CAF50;
+            --audit-color: #ffc107; /* CRITICAL AMBER/YELLOW */
+            --risk-color: #ff6b6b; /* CRITICAL RED */
+            --solution-color: #4CAF50; /* GREEN */
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-light); line-height: 1.6; overflow-x: hidden; }
@@ -274,7 +277,7 @@
         <div class="modal-content">
             <h3>Login Required</h3>
             <p>You must be logged in to use this feature.</p>
-            <a href="/auth/google" class="modal-button nav-button">Login with Google</a>
+            <a href="/auth/google" class="nav-button">Login with Google</a>
         </div>
     </div>
 
@@ -380,7 +383,7 @@
             generateFlowButton.disabled = isLoading;
             sendButton.disabled = isLoading;
             chatInput.disabled = isLoading;
-            flowInput.disabled = isLoading; // Disable flow input during generation
+            flowInput.disabled = isLoading;
         }
 
         // --- UX Fix: Clear Buttons ---
@@ -539,7 +542,7 @@
                     flowOutputArea.innerHTML = `<div class="output-content">${formattedHtml}</div>`;
                     saveFlowHistory(text, data.content); // Save to dedicated flow history
                 } else {
-                    flowOutputArea.innerHTML = `<p style="color:var(--error-error-color); font-weight:600;">⚠️ ${data.content}</p>`;
+                    flowOutputArea.innerHTML = `<p style="color:var(--error-color); font-weight:600;">⚠️ ${data.content}</p>`;
                 }
             } catch (error) {
                 console.error('Flow Fetch error:', error);
@@ -605,7 +608,7 @@
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        // --- Analyzer History Functions (User-Specific Storage FIX) ---
+        // --- HISTORY FUNCTIONS (Analyzer History) ---
         function getHistoryKey() {
             return USER_EMAIL ? `nexaGrindHistory_${USER_EMAIL.replace(/[^a-zA-Z0-9]/g, '_')}` : 'nexaGrindHistory_public';
         }
