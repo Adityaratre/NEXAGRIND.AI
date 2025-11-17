@@ -69,6 +69,8 @@ if (IS_PRODUCTION) {
 // Initialize Passport after session
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Required for session serialization
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((obj, done) => done(null, obj));
 
@@ -79,14 +81,14 @@ const openai = new OpenAI({
 });
 
 
-// CRITICAL: Array of Fallback Models (Using stable OpenRouter IDs)
+// CRITICAL: Array of Fallback Models (Tiered by best quality/stability)
 const FALLBACK_MODELS = [
-    // TIER 1: Best General Performance and Instruction Following (Standard OpenRouter ID)
+    // TIER 1: Best General Performance and Instruction Following (Primary)
     "openai/gpt-oss-20b:free",
-    // TIER 2: Secondary Stable Model (Mistral is widely available)
-    "mistralai/mistral-7b-instruct:free",
-    // TIER 3: Highly Reliable Basic Backup (General GPT 3.5 clone)
-    "openai/gpt-3.5-turbo",
+    // TIER 2: Specialized in Logic, Reasoning, and Complex Analysis
+    "z-ai/glm-4.5-air:free",
+    // TIER 3: Deep Research and Long-Context Audits
+    "tongyi/deepresearch-30b-a3b:free",
 ];
 
 // 6. Security Guard
@@ -95,7 +97,7 @@ function ensureAuthenticated(req, res, next) {
   res.status(401).json({ error: "You must be logged in to do that." });
 }
 
-// MASTER FALLBACK FUNCTION: Tries models sequentially until one succeeds
+// MASTER AI QUERY FUNCTION (Handles 3-Tier Fallback)
 async function runAiQuery(prompt) {
     const errorLog = [];
     
@@ -140,12 +142,13 @@ async function runAiQuery(prompt) {
 }
 
 
-// 7. Serve frontend HTML pages (standard)
+// 7. Serve frontend HTML pages
 app.use(express.static(__dirname));
 
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
 app.get("/app.html", (req, res) => res.sendFile(path.join(__dirname, "app.html")));
 app.get("/contact.html", (req, res) => res.sendFile(path.join(__dirname, "contact.html")));
+app.get("/reviews.html", (req, res) => res.sendFile(path.join(__dirname, "reviews.html"))); // New Reviews Page Route
 
 // 8. Google Login Routes (standard)
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -242,6 +245,25 @@ app.post("/chat", ensureAuthenticated, async (req, res) => {
     res.status(500).json({ success: false, reply: "Error communicating with AI." });
   }
 });
+
+// Decision Flow route (Reuses /generate logic)
+app.post("/generate-flow", ensureAuthenticated, async (req, res) => {
+    try {
+        const { text, prompt } = req.body;
+        const fullPrompt = `${prompt}: ${text}`;
+
+        const aiResponse = await runAiQuery(fullPrompt);
+
+        if (aiResponse.success) {
+            res.json({ success: true, content: aiResponse.content });
+        } else {
+            res.status(500).json(aiResponse);
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, content: "Error communicating with the Decision Flow Agent." });
+    }
+});
+
 
 // 10. Start Server
 app.listen(port, () => {

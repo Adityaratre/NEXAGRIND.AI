@@ -26,7 +26,7 @@
         a { text-decoration: none; color: var(--primary-light); }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         
-        /* --- Header --- */
+        /* --- Header (Matching App/Index.html) --- */
         header {
             background-color: rgba(30, 30, 30, 0.98); 
             backdrop-filter: blur(10px); padding: 15px 0; border-bottom: 1px solid var(--border-color);
@@ -36,7 +36,6 @@
         .logo { font-size: 1.8rem; font-weight: 800; color: var(--primary-color); }
         .header-buttons { display: flex; align-items: center; gap: 15px; }
         .nav-link { font-weight: 500; color: var(--text-secondary); transition: color 0.3s ease; }
-        .nav-link:hover { color: var(--primary-light); }
         .nav-button { background-color: var(--primary-color); color: var(--bg-dark); padding: 10px 18px; border-radius: 4px; font-weight: 700; transition: all 0.2s ease; }
         .nav-button:hover { background-color: var(--primary-light); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4); }
         .user-greeting { font-weight: 600; color: var(--text-light); display: none; margin-right: 5px; }
@@ -113,7 +112,8 @@
             <div class="header-buttons">
                 <a href="/app.html" class="nav-link">Get Help</a>
                 <a href="/contact.html" class="nav-link nav-button-active">Contact Us</a>
-                
+                <a href="/reviews.html" class="nav-link">Reviews</a>
+
                 <span id="user-greeting" class="user-greeting"></span>
                 <a href="/auth/google" id="login-button" class="nav-button" style="display: none;">Login</a>
                 <a href="/auth/logout" id="logout-button" class="nav-button nav-button-logout" style="display: none;">Logout</a>

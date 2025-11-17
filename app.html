@@ -148,6 +148,7 @@
             <div class="header-buttons">
                 <a href="/app.html" class="nav-link nav-link-active">Get Help</a>
                 <a href="/contact.html" class="nav-link">Contact Us</a>
+                <a href="/reviews.html" class="nav-link">Reviews</a>
                 
                 <span id="user-greeting" class="user-greeting"></span>
                 <a href="/auth/google" id="login-button" class="nav-button">Login</a>
@@ -216,6 +217,17 @@
                         <button id="send-button">Send</button>
                     </div>
                 </div>
+                <!-- Right Panel (Info) - Stays single column on desktop -->
+                <aside class="right-panel">
+                    <h3>About the Chat</h3>
+                    <p style="color:var(--text-secondary); margin-top:10px;">This chat is your direct line to the Expert Consultant AI. It ensures you receive high-quality, actionable answers instantly, without delaying your workflow.</p>
+                    <h3 style="margin-top: 20px;">Use Cases:</h3>
+                    <ul style="padding-left: 20px; margin-top: 10px; color: var(--text-secondary);">
+                        <li>Ask for follow-up details on any analysis.</li>
+                        <li>Draft a quick, professional email response.</li>
+                        <li>Brainstorm solutions for a new problem.</li>
+                    </ul>
+                </aside>
             </div>
         </section>
 
@@ -226,7 +238,7 @@
                 <!-- Left Panel (Input & Output) - Matching Analyzer Layout -->
                 <div class="input-panel">
                     <h2>Generate Decision Workflow</h2>
-                    <p style="color:var(--text-secondary); margin-bottom: 15px;">Use this agent to generate a structured, multi-step plan for any goal (e.g., "Build a full-stack Node.js app," "Write a research paper," etc.).</p>
+                    <p style="color:var(--text-secondary); margin-bottom: 15px;">Use this agent to generate a structured, multi-step plan for any goal (e.g., "Prepare for an interview," "Launch a product").</p>
                     
                     <!-- Input Container for Clear Button -->
                     <div class="input-container">
@@ -287,7 +299,7 @@
         const auditButton = document.getElementById('audit-button');
         const riskButton = document.getElementById('risk-button');
         const solutionButton = document.getElementById('solution-button');
-        const clearTextButton = document.getElementById('clear-text-button'); // New Clear Button
+        const clearTextButton = document.getElementById('clear-text-button');
         const outputArea = document.getElementById('output-area');
         const historyList = document.getElementById('history-list');
         const clearHistoryButton = document.getElementById('clear-history');
@@ -321,7 +333,7 @@
 
         // --- Core Startup Function ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // Check login status
+            // 1. Check login status
             try {
                 const res = await fetch('/api/user');
                 const data = await res.json();
@@ -355,6 +367,7 @@
             }
             return true;
         }
+        // Hide modal if user clicks outside
         loginModal.addEventListener('click', (e) => {
             if (e.target === loginModal) loginModal.style.display = 'none';
         });
@@ -367,7 +380,7 @@
             generateFlowButton.disabled = isLoading;
             sendButton.disabled = isLoading;
             chatInput.disabled = isLoading;
-            flowInput.disabled = isLoading;
+            flowInput.disabled = isLoading; // Disable flow input during generation
         }
 
         // --- UX Fix: Clear Buttons ---
@@ -400,6 +413,7 @@
 
         solutionButton.addEventListener('click', () => {
             if (!checkAuth()) return;
+            // CRITICAL FIX: Universal Problem Solver Prompt
             const prompt = "Act as an Expert Consultant. Analyze the following request/problem in detail. Provide the most comprehensive, logical, and step-by-step solution possible, using markdown formatting (checklists, headers, or code blocks) for the ultimate actionable answer. Address all constraints mentioned by the user.";
             generateContent(textInput.value, prompt, '/generate');
         });
@@ -440,8 +454,8 @@
                 if (data.success) {
                     // --- PROCESS SCORE/AUDIT DATA ---
                     const rawContent = data.content;
-                    const scoreMatch = rawContent.match(/^(\d+):/);
-                    const auditMatch = rawContent.match(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i);
+                    const scoreMatch = rawContent.match(/^(\d+):/); // For Risk Analysis
+                    const auditMatch = rawContent.match(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i); // For Audit Cost
                     
                     let finalContent = rawContent;
                     let infoCard = '';
@@ -591,7 +605,7 @@
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        // --- HISTORY FUNCTIONS (General Analyzer History) ---
+        // --- Analyzer History Functions (User-Specific Storage FIX) ---
         function getHistoryKey() {
             return USER_EMAIL ? `nexaGrindHistory_${USER_EMAIL.replace(/[^a-zA-Z0-9]/g, '_')}` : 'nexaGrindHistory_public';
         }
@@ -601,12 +615,12 @@
         }
 
         function saveToHistory(query, result, endpoint) {
-            if (!USER_EMAIL) return; 
+            if (!USER_EMAIL) return; // Don't save history if not logged in
             const history = getHistory();
             let type;
             if (endpoint === '/risk-analyze') { type = 'Risk Analysis'; }
             else if (endpoint === '/audit-cost') { type = 'Cost Audit'; }
-            else { type = 'Solution'; } 
+            else { type = 'Solution'; } // General solution/summary
             
             const newEntry = { id: Date.now(), query: query, result: result, type: type };
             history.unshift(newEntry);
