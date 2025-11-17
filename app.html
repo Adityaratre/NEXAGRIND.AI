@@ -13,12 +13,19 @@
             --primary-color: #00bcd4; --primary-light: #4dd0e1;
             --bg-dark: #121212; --bg-card: #1f1f1f; --bg-input: #282828; 
             --text-light: #f0f0f0; --text-secondary: #a0a0a0; --border-color: #333333;
-            --error-color: #ff6b6b; /* CRITICAL RED */
+            --error-color: #ff6b6b; /* Critical Red */
             --shadow-color: rgba(0, 188, 212, 0.4); 
             
-            --audit-color: #ffc107; /* CRITICAL AMBER/YELLOW */
-            --risk-color: #ff6b6b; /* CRITICAL RED */
-            --solution-color: #4CAF50; /* GREEN */
+            /* CRITICAL COLOR VARS FOR CARDS AND LOGIC */
+            --audit-color: #ffc107; /* Amber/Yellow for Audit */
+            --risk-low: #4CAF50; /* Green for Low Risk */
+            --risk-medium: #ffc107; /* Amber for Medium Risk */
+            --risk-high: #ff6b6b; /* Red for High Risk */
+            
+            --solution-color: #4CAF50; /* Green Button */
+            --risk-button-color: #ff6b6b; /* Red Button */
+            --audit-button-color: #ffc107; /* Yellow Button */
+            --summarize-color: #5c3dbb; /* Purple Button */
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-light); line-height: 1.6; overflow-x: hidden; }
@@ -99,14 +106,15 @@
         .control-button { 
             padding: 12px; font-size: 0.95rem; font-weight: 600; border: none; border-radius: 6px; 
             cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.3); 
+            color: var(--text-light); 
         }
         .control-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         
-        .btn-explain { background-color: #5c3dbb; color: var(--text-light); }
-        #solution-button { background-color: #4CAF50; color: var(--bg-white); }
-        #risk-button { background-color: var(--risk-color); color: var(--bg-white); }
-        #audit-button { background-color: var(--audit-color); color: var(--bg-white); }
-        #generate-flow-button { background-color: var(--primary-color); color: var(--bg-dark); }
+        /* Specific Button Colors - FINAL CORRECTED COLORS */
+        #summarize-button { background-color: var(--summarize-color); }
+        #solution-button { background-color: var(--solution-color); }
+        #risk-button { background-color: var(--risk-high); } /* Red button */
+        #audit-button { background-color: var(--audit-color); color: var(--bg-dark); } /* Yellow button */
 
         #output-area, #flow-output-area { background-color: var(--bg-input); border-radius: 8px; padding: 20px; min-height: 150px; color: var(--text-light); border: 1px solid var(--border-color); }
         
@@ -183,10 +191,10 @@
                     
                     <!-- New Buttons -->
                     <div class="controls">
-                        <button class="control-button btn-explain" id="summarize-button">Summarize</button>
+                        <button class="control-button" id="summarize-button">Summarize</button>
                         <button class="control-button" id="audit-button">Audit Cost</button>
                         <button class="control-button" id="solution-button">Find Solution</button>
-                        <button class="control-button btn-quiz" id="risk-button">Analyze Risk</button>
+                        <button class="control-button" id="risk-button">Analyze Risk</button>
                     </div>
 
                     <div id="output-area">
@@ -423,7 +431,7 @@
 
         auditButton.addEventListener('click', () => {
             if (!checkAuth()) return;
-            const prompt = "Act as a Financial Audit Agent. Based on the following service agreement or subscription text, return a single value for the MINIMUM TOTAL COST (in USD or local currency) on the first line, followed by a colon and a space (e.g., $120.00:), then provide the final analysis: 1. MINIMUM TOTAL COST (Calculate all non-optional charges for a minimum term), 2. CANCELLATION PENALTIES, 3. AUTO-RENEWAL DATE, and 4. PRICE INCREASE RISKS. Use clear markdown formatting:";
+            const prompt = "Act as a Financial Audit Agent. Based on the following service agreement or subscription text, return a single value for the MINIMUM TOTAL COST (in USD or local currency) on the first line, followed by a colon and a space (e.g., ₹6,09,300:), then provide the final analysis: 1. MINIMUM TOTAL COST (Calculate all non-optional charges for a minimum term), 2. CANCELLATION PENALTIES, 3. AUTO-RENEWAL DATE, and 4. PRICE INCREASE RISKS. Use clear markdown formatting:";
             generateContent(textInput.value, prompt, '/audit-cost');
         });
         
@@ -458,36 +466,54 @@
                     // --- PROCESS SCORE/AUDIT DATA ---
                     const rawContent = data.content;
                     const scoreMatch = rawContent.match(/^(\d+):/); // For Risk Analysis
-                    const auditMatch = rawContent.match(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i); // For Audit Cost
+                    // Regex updated to capture Rupee or dollar sign and numbers
+                    // Pattern: Match currency/Rs/INR followed by numbers/commas/periods, ending in a colon
+                    const auditMatch = rawContent.match(/^([$₹]|Rs\s|INR\s)?[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}:/i); 
                     
                     let finalContent = rawContent;
                     let infoCard = '';
+                    let currencySymbol = '₹'; // Default to Rupee
 
                     // Risk Card Display
                     if (endpoint === '/risk-analyze' && scoreMatch) {
                         const score = parseInt(scoreMatch[1].trim(), 10);
                         finalContent = rawContent.replace(/^(\d+):/, '').trim(); // Remove score from body
 
-                        let riskColor = 'var(--primary-color)';
+                        let riskColorVar = '--risk-low'; 
                         let riskLabel = 'Low Risk';
-                        if (score < 70) { riskColor = 'orange'; riskLabel = 'Medium Risk'; }
-                        if (score < 40) { riskColor = 'var(--error-color)'; riskLabel = 'High Risk'; }
+                        if (score < 70) { riskColorVar = '--risk-medium'; riskLabel = 'Medium Risk'; }
+                        if (score < 40) { riskColorVar = '--risk-high'; riskLabel = 'High Risk'; }
                         
+                        // CRITICAL FIX: Use CSS var for dynamic color in the card
                         infoCard = `
-                            <div style="padding:15px; border-radius:8px; margin-bottom:15px; background-color: var(--bg-card); border-left: 5px solid ${riskColor}; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                                <div style="font-size:1.5rem; font-weight:700; color:${riskColor};">${score}% Confidence</div>
+                            <div style="padding:15px; border-radius:8px; margin-bottom:15px; background-color: var(--bg-card); border-left: 5px solid var(${riskColorVar}); box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                <div style="font-size:1.5rem; font-weight:700; color:var(${riskColorVar});">${score}% Confidence</div>
                                 <div style="font-size:0.9rem; color:var(--text-light);">Assessment: ${riskLabel}</div>
                             </div>
                         `;
                     } 
-                    // Audit Cost Display
+                    // Audit Cost Display - FIXED
                     else if (endpoint === '/audit-cost' && auditMatch) {
-                        const cost = auditMatch[1].trim();
-                        finalContent = rawContent.replace(/^(\$[,\d]+\.\d{2}|\d+[\.\,]?\d*\s?[A-Z]{2,3}):/i, '').trim();
+                        const costMatchText = auditMatch[0] || '';
+                        
+                        // 1. Determine the correct currency symbol based on input
+                        if (text.toLowerCase().includes('inr') || text.toLowerCase().includes('rs')) {
+                            currencySymbol = '₹';
+                        } else if (costMatchText.includes('$')) {
+                            currencySymbol = '$';
+                        }
+                        
+                        // 2. Extract the clean number part (e.g., "6,09,300")
+                        const numericCostMatch = costMatchText.match(/[\d,\.]+/);
+                        const numericCost = numericCostMatch ? numericCostMatch[0] : 'N/A';
+                        
+                        // 3. Remove the cost line from the final content
+                        finalContent = rawContent.replace(costMatchText, '').trim(); 
 
+                        // CRITICAL FIX: Use CSS var for dynamic color (Amber) and the correct symbol
                         infoCard = `
                             <div style="padding:15px; border-radius:8px; margin-bottom:15px; background-color: var(--bg-card); border-left: 5px solid var(--audit-color); box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                                <div style="font-size:1.5rem; font-weight:700; color:var(--audit-color);">Estimated Cost: ${cost}</div>
+                                <div style="font-size:1.5rem; font-weight:700; color:var(--audit-color);">Estimated Cost: ${currencySymbol}${numericCost}</div>
                                 <div style="font-size:0.9rem; color:var(--text-light);">Minimum Obligation Calculated</div>
                             </div>
                         `;
@@ -608,7 +634,7 @@
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
 
-        // --- HISTORY FUNCTIONS (Analyzer History) ---
+        // --- Analyzer History Functions (User-Specific Storage FIX) ---
         function getHistoryKey() {
             return USER_EMAIL ? `nexaGrindHistory_${USER_EMAIL.replace(/[^a-zA-Z0-9]/g, '_')}` : 'nexaGrindHistory_public';
         }

@@ -81,11 +81,15 @@ const openai = new OpenAI({
 });
 
 
-// CRITICAL: Array of Fallback Models 
+// CRITICAL FIX: ARRAY USING UNIVERSALLY STABLE MODELS
+// These models are widely available and extremely stable on OpenRouter/Mistral/OpenAI quotas.
 const FALLBACK_MODELS = [
-    "openai/gpt-oss-20b:free",
-    "z-ai/glm-4.5-air:free",
-    "tongyi/deepresearch-30b-a3b:free",
+    // TIER 1: FASTEST & MOST STABLE (Mistral is the speed champion)
+    "mistralai/mistral-7b-instruct:free",
+    // TIER 2: UNIVERSAL BACKUP (GPT-3.5 is always reliable)
+    "openai/gpt-3.5-turbo",
+    // TIER 3: Highly Reliable Basic Backup (General Llama 2 model)
+    "meta-llama/llama-2-70b-chat",
 ];
 
 // 6. Security Guard
@@ -94,7 +98,7 @@ function ensureAuthenticated(req, res, next) {
   res.status(401).json({ error: "You must be logged in to do that." });
 }
 
-// MASTER AI QUERY FUNCTION (Accepts a specific temperature for calculation vs. creativity)
+// MASTER AI QUERY FUNCTION (Handles 3-Tier Fallback)
 async function runAiQuery(prompt, temp = 0.7) {
     const errorLog = [];
     
@@ -105,7 +109,6 @@ async function runAiQuery(prompt, temp = 0.7) {
             const completion = await openai.chat.completions.create({
                 messages: [{ role: "user", content: prompt }],
                 model: model,
-                // CRITICAL FIX: Use the specific temperature passed to the function
                 temperature: temp, 
             });
             
@@ -113,14 +116,13 @@ async function runAiQuery(prompt, temp = 0.7) {
             return { success: true, content: completion.choices[0].message.content };
             
         } catch (error) {
-            // ... (Failure logic remains the same)
             const status = error.status || "Unknown";
             const message = error.message || "Unknown error";
             
             if (status === 429) {
                 console.warn(`[AI] RATE LIMIT HIT on ${model}. Trying next model...`);
                 errorLog.push(`Rate Limit Hit on ${model}`);
-                continue; 
+                continue; // Move to the next model in the list
             } else if (status === 400 && message.includes("not a valid model ID")) {
                 console.warn(`[AI] Model ${model} is invalid/unavailable. Trying next model...`);
                 errorLog.push(`Invalid Model ID: ${model}`);
@@ -149,7 +151,7 @@ app.get("/app.html", (req, res) => res.sendFile(path.join(__dirname, "app.html")
 app.get("/contact.html", (req, res) => res.sendFile(path.join(__dirname, "contact.html")));
 app.get("/reviews.html", (req, res) => res.sendFile(path.join(__dirname, "reviews.html")));
 
-// 8. Google Login Routes (standard)
+// 8. Google Login Routes
 app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 app.get("/auth/google/callback", passport.authenticate("google", {
     successRedirect: "/app.html", failureRedirect: "/",
@@ -177,8 +179,8 @@ app.post("/generate", ensureAuthenticated, async (req, res) => {
   try {
     const { text, prompt } = req.body;
     const fullPrompt = `${prompt}: ${text}`;
-    // Use standard temperature (0.7) for general text/summaries
-    const aiResponse = await runAiQuery(fullPrompt, 0.7); 
+
+    const aiResponse = await runAiQuery(fullPrompt, 0.7); // Standard creativity
 
     if (aiResponse.success) {
         res.json({ success: true, content: aiResponse.content });
@@ -195,9 +197,9 @@ app.post("/audit-cost", ensureAuthenticated, async (req, res) => {
     try {
         const { text, prompt } = req.body;
         const fullPrompt = `${prompt}: ${text}`;
-        // CRITICAL FIX: Use temperature 0.0 for deterministic calculations
-        const aiResponse = await runAiQuery(fullPrompt, 0.0); 
-        
+
+        const aiResponse = await runAiQuery(fullPrompt, 0.0); // Deterministic calc
+
         if (aiResponse.success) {
             res.json({ success: true, content: aiResponse.content });
         } else {
@@ -214,8 +216,8 @@ app.post("/risk-analyze", ensureAuthenticated, async (req, res) => {
     try {
         const { text, prompt } = req.body;
         const fullPrompt = `${prompt}: ${text}`;
-        // CRITICAL FIX: Use temperature 0.0 for deterministic scoring
-        const aiResponse = await runAiQuery(fullPrompt, 0.0); 
+
+        const aiResponse = await runAiQuery(fullPrompt, 0.0); // Deterministic scoring
         
         if (aiResponse.success) {
             res.json({ success: true, content: aiResponse.content });
@@ -232,8 +234,8 @@ app.post("/risk-analyze", ensureAuthenticated, async (req, res) => {
 app.post("/chat", ensureAuthenticated, async (req, res) => {
   try {
     const { message } = req.body;
-    // Use standard temperature (0.7) for conversation/creativity
-    const aiResponse = await runAiQuery(message, 0.7); 
+
+    const aiResponse = await runAiQuery(message, 0.7); // Standard creativity
 
     if (aiResponse.success) {
         res.json({ success: true, reply: aiResponse.content });
@@ -251,8 +253,8 @@ app.post("/generate-flow", ensureAuthenticated, async (req, res) => {
     try {
         const { text, prompt } = req.body;
         const fullPrompt = `${prompt}: ${text}`;
-        // Use standard temperature (0.7) for creative flow generation
-        const aiResponse = await runAiQuery(fullPrompt, 0.7); 
+
+        const aiResponse = await runAiQuery(fullPrompt, 0.7); // Standard creativity
 
         if (aiResponse.success) {
             res.json({ success: true, content: aiResponse.content });
