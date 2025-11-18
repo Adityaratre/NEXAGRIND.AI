@@ -23,7 +23,7 @@ app.use(express.json()); // Parse JSON request bodies
 // 4. Google OAuth & Session Configuration
 if (IS_PRODUCTION) {
   // --- Production / Render Setup ---
-  app.set("trust proxy", 1); 
+  app.set("trust proxy", 1);
 
   // Secure session setup for HTTPS
   app.use(
@@ -82,14 +82,14 @@ const openai = new OpenAI({
 
 
 // CRITICAL FIX: ARRAY USING UNIVERSALLY STABLE MODELS
-// These models are widely available and extremely stable on OpenRouter/Mistral/OpenAI quotas.
+// FINAL OPTIMIZED TIER LIST
 const FALLBACK_MODELS = [
-    // TIER 1: FASTEST & MOST STABLE (Mistral is the speed champion)
-    "mistralai/mistral-7b-instruct:free",
-    // TIER 2: UNIVERSAL BACKUP (GPT-3.5 is always reliable)
+    // TIER 1: RELIABILITY & STRUCTURE CHAMPION (Guaranteed stability and format adherence)
     "openai/gpt-3.5-turbo",
-    // TIER 3: Highly Reliable Basic Backup (General Llama 2 model)
-    "meta-llama/llama-2-70b-chat",
+    // TIER 2: BEST FREE OPEN SOURCE REPLACEMENT (DeepSeek R1 for strong reasoning and structure)
+    "deepseek/deepseek-r1:free",
+    // TIER 3: HIGH-QUALITY MODERN BACKUP (Latest Llama model for high quality and structure)
+    "meta-llama/llama-3-8b-instruct",
 ];
 
 // 6. Security Guard
@@ -99,21 +99,29 @@ function ensureAuthenticated(req, res, next) {
 }
 
 // MASTER AI QUERY FUNCTION (Handles 3-Tier Fallback)
-async function runAiQuery(prompt, temp = 0.7) {
+// FIX: Accepts either a single string (Analyzer) or an array of messages (Chat)
+async function runAiQuery(promptOrMessages, temp = 0.7) {
     const errorLog = [];
+    
+    // Determine if input is a single string (for old routes) or an array of messages (for chat)
+    const messages = Array.isArray(promptOrMessages) 
+        ? promptOrMessages 
+        : [{ role: "user", content: promptOrMessages }];
     
     for (const model of FALLBACK_MODELS) {
         try {
             console.log(`[AI] Attempting Model: ${model} (Temp: ${temp})`);
             
             const completion = await openai.chat.completions.create({
-                messages: [{ role: "user", content: prompt }],
+                // CRITICAL CHANGE: Use the provided messages array
+                messages: messages, 
                 model: model,
                 temperature: temp, 
             });
             
             console.log(`[AI] Success using: ${model}`);
-            return { success: true, content: completion.choices[0].message.content };
+            // Return the entire assistant's message object
+            return { success: true, message: completion.choices[0].message };
             
         } catch (error) {
             const status = error.status || "Unknown";
@@ -138,7 +146,7 @@ async function runAiQuery(prompt, temp = 0.7) {
     // If the loop finishes without success, return the final failure message
     return { 
         success: false, 
-        content: `FATAL ERROR: All ${FALLBACK_MODELS.length} AI models failed. Please check OpenRouter credits. Log: ${errorLog.join(' / ')}` 
+        content: `FATAL ERROR: All ${FALLBACK_MODELS.length} AI models failed. Please check OpenRouter credits. Log: ${errorLog.join(' / ')}`
     };
 }
 
@@ -180,10 +188,12 @@ app.post("/generate", ensureAuthenticated, async (req, res) => {
     const { text, prompt } = req.body;
     const fullPrompt = `${prompt}: ${text}`;
 
+    // Note: runAiQuery handles single string prompts from Analyzer
     const aiResponse = await runAiQuery(fullPrompt, 0.7); // Standard creativity
 
     if (aiResponse.success) {
-        res.json({ success: true, content: aiResponse.content });
+        // Retrieve content from the message object for Analyzer output
+        res.json({ success: true, content: aiResponse.message.content });
     } else {
         res.status(500).json(aiResponse);
     }
@@ -201,7 +211,8 @@ app.post("/audit-cost", ensureAuthenticated, async (req, res) => {
         const aiResponse = await runAiQuery(fullPrompt, 0.0); // Deterministic calc
 
         if (aiResponse.success) {
-            res.json({ success: true, content: aiResponse.content });
+            // Retrieve content from the message object for Analyzer output
+            res.json({ success: true, content: aiResponse.message.content });
         } else {
             res.status(500).json(aiResponse);
         }
@@ -220,7 +231,8 @@ app.post("/risk-analyze", ensureAuthenticated, async (req, res) => {
         const aiResponse = await runAiQuery(fullPrompt, 0.0); // Deterministic scoring
         
         if (aiResponse.success) {
-            res.json({ success: true, content: aiResponse.content });
+            // Retrieve content from the message object for Analyzer output
+            res.json({ success: true, content: aiResponse.message.content });
         } else {
             res.status(500).json(aiResponse);
         }
@@ -231,15 +243,20 @@ app.post("/risk-analyze", ensureAuthenticated, async (req, res) => {
 
 
 // Q&A Chat tab
+// CRITICAL FIX: Now uses the full conversation history from the client
 app.post("/chat", ensureAuthenticated, async (req, res) => {
   try {
-    const { message } = req.body;
+    // CRITICAL CHANGE: Expect the full message history array from the client
+    const { history } = req.body;
 
-    const aiResponse = await runAiQuery(message, 0.7); // Standard creativity
+    // Pass the full history array to the AI query function for context
+    const aiResponse = await runAiQuery(history, 0.7); 
 
     if (aiResponse.success) {
-        res.json({ success: true, reply: aiResponse.content });
+        // Return the full message object for easy client-side history update
+        res.json({ success: true, reply: aiResponse.message });
     } else {
+        // Fallback for fatal error content
         res.status(500).json({ success: false, reply: aiResponse.content });
     }
   } catch (error) {
@@ -257,7 +274,8 @@ app.post("/generate-flow", ensureAuthenticated, async (req, res) => {
         const aiResponse = await runAiQuery(fullPrompt, 0.7); // Standard creativity
 
         if (aiResponse.success) {
-            res.json({ success: true, content: aiResponse.content });
+            // Retrieve content from the message object for Analyzer output
+            res.json({ success: true, content: aiResponse.message.content });
         } else {
             res.status(500).json(aiResponse);
         }
