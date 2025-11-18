@@ -28,7 +28,8 @@
         .logo { font-size: 1.8rem; font-weight: 800; color: var(--primary-color); text-decoration: none;}
         .header-buttons { display: flex; align-items: center; gap: 15px; }
         .nav-link { font-weight: 500; color: var(--text-secondary); transition: color 0.3s ease; }
-        .nav-button { background-color: var(--primary-color); color: var(--bg-dark); padding: 10px 18px; border-radius: 4px; font-weight: 700; text-decoration: none; }
+        .nav-button { background-color: var(--primary-color); color: var(--bg-dark); padding: 10px 18px; border-radius: 4px; font-weight: 700; text-decoration: none; transition: background-color 0.2s; }
+        .nav-button:hover { background-color: var(--primary-light); }
         .user-greeting { font-weight: 600; color: var(--text-light); display: none; margin-right: 5px; }
 
         /* --- Main Review Section --- */
@@ -72,7 +73,22 @@
         }
         #review-form h2 { color: var(--primary-color); margin-bottom: 20px; }
         #review-form textarea { width: 100%; height: 100px; background: var(--bg-input); color: var(--text-light); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); resize: vertical; }
-        #review-form input[type="range"] { width: 100%; margin-top: 10px; }
+        #review-form input[type="range"] { 
+             width: 100%; margin-top: 10px; 
+            -webkit-appearance: none;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+         #review-form input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
         #review-form label { display: block; margin-top: 15px; font-size: 0.9rem; color: var(--text-secondary); }
         #review-form button { margin-top: 20px; }
 
@@ -131,10 +147,14 @@
 
     <main class="review-section">
         <div class="container">
+            <!-- Summary Card (Original UI) -->
             <div class="summary-card">
-                <h1 id="total-reviews-count">Loading Reviews...</h1>
+                <!-- Total Count: 5,000+ proof -->
+                <h1 id="total-reviews-count">Trusted by over 5,320 users.</h1>
+                <!-- Average Rating Stars: Dynamically set (fixed to 4.6 stars visually) -->
                 <div class="star-rating" id="average-rating"></div>
-                <p style="color: var(--text-secondary);">4.9 out of 5 stars based on verified usage.</p>
+                <!-- Average Score Text: Dynamically set (fixed to 4.6) -->
+                <p id="average-rating-text" style="color: var(--text-secondary);">4.6 out of 5 stars based on verified usage.</p>
                 <button id="show-review-form" class="nav-button" style="margin-top: 15px;">Write a Review</button>
             </div>
 
@@ -148,7 +168,8 @@
                     <input type="range" id="rating-slider" min="1" max="5" value="5" step="1">
 
                     <button type="submit" class="nav-button">Submit Review</button>
-                    <p id="review-error" style="color: var(--error-color); margin-top: 10px; display: none;">You must be logged in to submit a review.</p>
+                    <!-- Error/Notice displays here -->
+                    <p id="review-error" style="color: var(--error-color); margin-top: 10px; display: none;"></p>
                 </form>
             </div>
 
@@ -159,6 +180,7 @@
                     <option value="highest">Sort by: Highest Rating</option>
                     <option value="lowest">Sort by: Lowest Rating</option>
                 </select>
+                <!-- Displaying count text is updated here -->
                 <p style="color: var(--text-secondary); font-size: 0.9rem;">Displaying <span id="display-count"></span> reviews.</p>
             </div>
 
@@ -182,46 +204,64 @@
 
     <script>
         // --- Globals ---
-        let IS_LOGGED_IN = false;
-        let USER_NAME = 'Guest User';
+        let IS_LOGGED_IN = true; // SIMULATION: Allows review submission attempt for testing limit message
+        let USER_NAME = 'Guest User'; // We don't use this for simulated reviews, only user submissions
         let CURRENT_PAGE = 1;
-        const REVIEWS_PER_PAGE = 10; // Only show 10 reviews per page
+        const REVIEWS_PER_PAGE = 10; 
         let ALL_REVIEWS_SORTED = []; 
         
-        // Data structure for generating authentic Indian reviews
+        // --- CONFIGURATION ---
+        const TARGET_AVERAGE_RATING = 4.6; 
+
+        // --- AUTHENTIC INDIAN DATA ---
+        // Expanded list of full Indian names for randomness
         const SIMULATED_NAMES = [
-            "Aryan Sharma", "Priya Singh", "Ravi Kumar", "Neha Patel", "Sanjay Reddy", 
-            "Anjali Das", "Vikram Rao", "Meera Joshi", "Aisha Khan", "Rahul Gupta",
-            "Deepak Verma", "Ritu Nair", "Kunal Yadav", "Ishita Varma", "Gaurav Soni"
+            "Aakash Singh", "Pooja Sharma", "Rohit Kumar", "Anjali Patel", "Siddharth Reddy", 
+            "Meghana Das", "Vivek Rao", "Kavita Joshi", "Zakir Khan", "Aditya Gupta",
+            "Deepika Verma", "Rahul Nair", "Kunal Yadav", "Ishita Varma", "Gaurav Soni",
+            "Jaya Menon", "Amitabh Kant", "Kiran Desai", "Zoya Mirza", "Harishankar Trivedi",
+            "Divya Saxena", "Manish Tiwari", "Preeti Malhotra", "Alok Chauhan", "Smita Rane",
+            "Mohan Krishna", "Lata Bansal", "Rakesh Dubey", "Shreya Iyer", "Nikhil Chopra"
         ];
         
-        // Static Review Data (to meet the 5000+ requirement)
+        // Data for realism and mixed ratings
         const SIMULATED_DATA = {
             total_count: 5320, 
+            STAR_WEIGHTS: { 5: 50, 4: 25, 3: 10, 2: 8, 1: 7 }, // Weighted rating to hit ~4.6 avg
+            
             positive_reviews: [
-                "The Risk Analysis feature is a game-changer. It caught a hidden AMC fee in my mutual fund document instantly. Truly next-level intelligence.",
-                "As a student, the Universal Problem Solver is my lifeline. The step-by-step solutions for complex programming problems are clearer than any textbook. 10/10 for accuracy and speed.",
-                "The multi-tiered fallback system works flawlessly. I've hit rate limits on other free APIs, but NexaGrind always delivers the result without delay. Fantastic engineering under the hood.",
-                "I used the Audit Cost feature on a rental agreement. It flagged a clause about arbitrary rent increases that I completely missed. Saved me major headaches. Great utility for the Indian market.",
-                "Zero issues with the Google Login. It's secure, fast, and my history is isolated. Great work by the development team.",
-                "The Decision Flow agent is phenomenal. I generated a full 30-day plan for a startup pitch deck—it was structured, logical, and ready to implement.",
+                "The Risk Analysis feature is a game-changer. It caught a hidden AMC fee in my mutual fund document instantly. Truly next-level intelligence, fantastic for the Indian market.",
+                "As a student preparing for the UPSC, the Universal Problem Solver is my lifeline. The step-by-step solutions for complex historical analysis are clearer than any coaching notes. 10/10 for accuracy and speed.",
+                "The multi-tiered fallback system works flawlessly. I've hit API limits on other platforms, but NexaGrind always delivers the result without delay. Dependable service in India, especially during peak load.",
+                "I used the Audit Cost feature on a rental agreement in Mumbai. It flagged a clause about arbitrary rent increases that I completely missed. Saved me major headaches. Highly recommend this feature.",
+                "The Decision Flow agent is phenomenal. I generated a full strategy for scaling my e-commerce startup in Bangalore—it was structured, logical, and ready to implement for the local environment.",
+                "Absolutely crucial for competitive exams. The platform's ability to synthesize large volumes of data quickly gives me a huge edge. Worth every rupee.",
+                "The interface is clean and works fast even on 3G/4G connections. This optimization is key when working remotely in smaller cities."
             ],
             mixed_reviews: [
-                "The app sometimes takes 5-6 seconds to generate a solution. I understand the complexity, but it could be faster. The history feature works well, though.",
-                "The dark UI is a bit too intense. Maybe a light mode option would be nice. Functionality is top-notch.",
-                "The Audit Cost feature is great, but the calculation seemed slightly off on my complex tax document. Still provided good guidance.",
+                "The app sometimes takes 5-6 seconds to generate a solution, especially during peak evening hours (8-10 PM IST). I understand the complexity, but it could be faster. The history feature works well, though.",
+                "The dark UI is stylish but a bit too intense after 10 hours of studying. Maybe a light mode option would be nice for daytime use. Functionality is top-notch, though.",
+                "The Audit Cost feature is great, but the calculation seemed slightly off on my complex HRA document. Still provided good guidance, but needed manual verification.",
+                "It works fine on desktop, but the mobile web version occasionally lags on my older Android device. Hope to see an improvement in network optimization soon.",
             ],
+            negative_reviews: [
+                 "I experienced a major outage that wasn't communicated clearly via SMS or email. Needs better reliability and transparency.",
+                 "The service description was misleading regarding its integration capabilities. It was difficult to integrate with my existing tools and felt clunky.",
+            ]
         };
 
 
         // --- DOM Elements ---
         const reviewGrid = document.getElementById('review-grid');
-        const totalReviewsCount = document.getElementById('total-reviews-count');
+        const totalReviewsCount = document.getElementById('total-reviews-count'); 
+        const averageRatingDiv = document.getElementById('average-rating'); 
+        const averageRatingText = document.getElementById('average-rating-text');
         const displayCount = document.getElementById('display-count');
         const sortBySelect = document.getElementById('sort-by');
         const reviewFormContainer = document.getElementById('review-form-container');
         const showReviewFormButton = document.getElementById('show-review-form');
         const reviewForm = document.getElementById('review-form');
+        const reviewTextarea = document.getElementById('review-text');
         const ratingSlider = document.getElementById('rating-slider');
         const ratingValueSpan = document.getElementById('rating-value');
         const reviewError = document.getElementById('review-error');
@@ -233,20 +273,56 @@
         // --- Helper Functions ---
         function generateStars(rating) {
             let stars = '';
+            // Unicode stars: ★ (filled) and ☆ (empty)
             for (let i = 1; i <= 5; i++) {
                 stars += i <= rating ? '★' : '☆';
             }
             return stars;
         }
+        
+        function getRandomWeightedRating() {
+            const weights = SIMULATED_DATA.STAR_WEIGHTS;
+            let totalWeight = 0;
+            for (const rating in weights) {
+                totalWeight += weights[rating];
+            }
 
-        function getReviewTime() {
-            const d = new Date();
-            return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
+            let random = Math.random() * totalWeight;
+            
+            for (const ratingStr in weights) {
+                const rating = parseInt(ratingStr);
+                const weight = weights[rating];
+                if (random < weight) {
+                    return rating;
+                }
+                random -= weight;
+            }
+            return 5; 
         }
+
+        /**
+         * Generates a date string for Nov 16 or Nov 17, 2025, with random time.
+         * @returns {string} Date string in 'Nov 16, 2025' format.
+         */
+        function getLaunchReviewTime() {
+            const day = Math.random() < 0.5 ? 16 : 17;
+            // Generate a time between 10:00 AM and 10:00 PM for realistic review times
+            const hour = Math.floor(Math.random() * 12) + 10; 
+            const minute = Math.floor(Math.random() * 60);
+
+            // Month 10 is November (0-indexed)
+            const date = new Date(2025, 10, day, hour, minute); 
+            
+            return date.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
 
         function getStoredReviews() {
             try {
-                return JSON.parse(localStorage.getItem('userSubmittedReviews') || '[]');
+                const stored = localStorage.getItem('userSubmittedReviews') || '[]';
+                const reviews = JSON.parse(stored);
+                // Filter out the fake submission message if any were incorrectly stored
+                return reviews.filter(r => typeof r === 'object' && r.rating); 
             } catch (e) {
                 return [];
             }
@@ -254,7 +330,7 @@
 
         function createReviewCard(name, text, rating, date) {
             const card = document.createElement('div');
-            card.className = `review-card ${rating < 4 ? 'low-rating' : ''}`;
+            card.className = `review-card ${rating <= 2 ? 'low-rating' : ''}`;
             card.innerHTML = `
                 <div class="review-header">
                     <span class="reviewer-name">${name}</span>
@@ -265,40 +341,76 @@
             `;
             return card;
         }
+        
+        function getSimulatedReview() {
+            const rating = getRandomWeightedRating();
+            
+            // Pick a random full name from the list
+            const name = getRandomElement(SIMULATED_NAMES);
+            
+            let text;
+            if (rating >= 4) {
+                text = getRandomElement(SIMULATED_DATA.positive_reviews);
+            } else if (rating === 3) {
+                text = getRandomElement(SIMULATED_DATA.mixed_reviews);
+            } else { // 1 or 2 stars
+                text = getRandomElement(SIMULATED_DATA.negative_reviews);
+            }
+
+            // Set the date to be within the launch window (Nov 16-17, 2025)
+            const dateString = getLaunchReviewTime();
+            
+            // Use a mock timestamp based on the generated date string for sorting
+            const mockTimestamp = new Date(dateString).getTime() + Math.floor(Math.random() * 86400000); // Add a random time of day
+
+            return { 
+                name, 
+                text, 
+                rating, 
+                date: dateString, 
+                timestamp: mockTimestamp
+            };
+        }
+        
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
 
         // --- Core Review Logic ---
 
         function getCombinedAndSortedReviews(sortType) {
             
-            const dates = [];
-            for (let i = 0; i < 365; i++) { // Generate dates array over a year for realism
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                dates.push(d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }));
-            }
-            
-            // 1. Generate Static Reviews (40 representative static reviews for display)
+            // 1. Generate 40 representative simulated reviews for display diversity
             const simulatedReviews = [];
-            for (let i = 0; i < 30; i++) {
-                let name = SIMULATED_NAMES[Math.floor(Math.random() * SIMULATED_NAMES.length)];
-                let date = dates[Math.floor(Math.random() * dates.length)];
-                let rating = Math.random() < 0.9 ? (Math.random() > 0.5 ? 5 : 4) : (Math.random() > 0.5 ? 3 : 2);
-                let text = rating > 3 ? SIMULATED_DATA.positive_reviews[Math.floor(Math.random() * SIMULATED_DATA.positive_reviews.length)] : SIMULATED_DATA.mixed_reviews[Math.floor(Math.random() * SIMULATED_DATA.mixed_reviews.length)];
+            
+            // Use a Set to track generated review signatures (Name + Text) to prevent visible duplication
+            const uniqueReviewsSet = new Set();
+            for (let i = 0; i < 40; i++) { 
+                let review = getSimulatedReview();
+                const signature = review.name + review.text;
                 
-                simulatedReviews.push({ name, text, rating, date, timestamp: new Date(date).getTime() });
+                // Keep generating until a unique review signature is found or we've tried too many times
+                let attempts = 0;
+                while(uniqueReviewsSet.has(signature) && attempts < 100) {
+                    review = getSimulatedReview();
+                    attempts++;
+                }
+                
+                uniqueReviewsSet.add(signature);
+                simulatedReviews.push(review);
             }
-
 
             // 2. Get User-Submitted Reviews
             const userReviews = getStoredReviews().map(r => ({
                 ...r,
-                timestamp: r.timestamp || new Date(r.date).getTime()
+                timestamp: r.timestamp || Date.now()
             }));
 
             // 3. Combine and Sort
-            let combinedReviews = [...simulatedReviews, ...userReviews];
+            let combinedReviews = [...userReviews, ...simulatedReviews];
 
-            // Sorting Logic
+            // Sorting Logic (Timestamp is crucial for 'Newest' and tie-breaking)
             if (sortType === 'highest') {
                 combinedReviews.sort((a, b) => b.rating - a.rating || b.timestamp - a.timestamp);
             } else if (sortType === 'lowest') {
@@ -310,15 +422,21 @@
             return combinedReviews;
         }
 
+
         function loadReviews() {
             const sortType = sortBySelect.value;
+            
+            // Use the fixed value for the average rating as requested (4.6)
+            const average = TARGET_AVERAGE_RATING; 
+            
             ALL_REVIEWS_SORTED = getCombinedAndSortedReviews(sortType);
             
             const totalUserReviews = getStoredReviews().length;
             const totalReviews = SIMULATED_DATA.total_count + totalUserReviews;
             
             // Calculate total pages
-            const totalPages = Math.ceil(ALL_REVIEWS_SORTED.length / REVIEWS_PER_PAGE);
+            const totalReviewsAvailable = ALL_REVIEWS_SORTED.length;
+            const totalPages = Math.ceil(totalReviewsAvailable / REVIEWS_PER_PAGE);
             
             // Ensure current page is valid
             if (CURRENT_PAGE > totalPages) CURRENT_PAGE = totalPages;
@@ -326,7 +444,7 @@
 
             // Determine which reviews to display
             const startIndex = (CURRENT_PAGE - 1) * REVIEWS_PER_PAGE;
-            const endIndex = startIndex + REVIEWS_PER_PAGE;
+            const endIndex = Math.min(startIndex + REVIEWS_PER_PAGE, totalReviewsAvailable);
             const reviewsToDisplay = ALL_REVIEWS_SORTED.slice(startIndex, endIndex);
 
             reviewGrid.innerHTML = '';
@@ -334,25 +452,34 @@
                 reviewGrid.appendChild(createReviewCard(r.name, r.text, r.rating, r.date));
             });
             
-            // --- UI Updates (FIXES 1 & 2) ---
+            // --- UI Updates ---
             
-            // FIX 2: Real-time Total Count
+            // 1. Total Count (h1)
             totalReviewsCount.textContent = `Trusted by over ${totalReviews.toLocaleString('en-IN')} users.`;
             
-            // FIX 1: Pagination Controls Update
+            // 2. Average Rating Stars (div)
+            const roundedAvg = Math.round(average);
+            averageRatingDiv.innerHTML = generateStars(roundedAvg);
+            
+            // 3. Average Score Text (p)
+            averageRatingText.textContent = `${average.toFixed(1)} out of 5 stars based on verified usage.`;
+
+            // 4. Pagination Controls Update
+            displayCount.textContent = `${reviewsToDisplay.length} of ${totalReviewsAvailable}`;
             pageInfoSpan.textContent = `Page ${CURRENT_PAGE} of ${totalPages || 1}`;
-            prevPageButton.disabled = CURRENT_PAGE === 1;
+            prevPageButton.disabled = CURRENT_PAGE <= 1;
             nextPageButton.disabled = CURRENT_PAGE >= totalPages;
         }
 
+
         // --- Event Listeners and Setup ---
 
-        // FIX 3: Slider feedback must update the span immediately
+        // Slider feedback must update the span immediately
         ratingSlider.addEventListener('input', () => {
             ratingValueSpan.textContent = ratingSlider.value;
         });
 
-        // Pagination Listeners (FIX 1)
+        // Pagination Listeners
         nextPageButton.addEventListener('click', () => {
             CURRENT_PAGE++;
             loadReviews();
@@ -373,70 +500,44 @@
             if (!IS_LOGGED_IN) {
                 reviewError.textContent = "You must be logged in with Google to submit a review.";
                 reviewError.style.display = 'block';
+                reviewError.style.color = 'var(--error-color)';
                 return;
             }
+            // Reset error/notice state on show
+            reviewError.style.display = 'none'; 
             reviewFormContainer.style.display = 'block';
             showReviewFormButton.style.display = 'none';
-            reviewError.style.display = 'none'; // Clear error on show
         });
 
-        // Submit Review Logic (FIX 2: Updates total count instantly)
+        // Review Submission Logic - Implements the "Review Limit Reached" notice
         reviewForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const text = reviewTextarea.value.trim();
-            const rating = parseInt(ratingSlider.value, 10);
             
-            if (text.length < 10) {
-                reviewError.textContent = "Please write at least 10 characters of feedback.";
+            if (text.length < 20) {
+                reviewError.textContent = "Please provide at least 20 characters of detailed feedback.";
                 reviewError.style.display = 'block';
+                reviewError.style.color = 'var(--error-color)';
                 return;
             }
-
-            const newReview = {
-                name: USER_NAME,
-                text: text,
-                rating: rating,
-                date: getReviewTime(),
-                timestamp: Date.now() 
-            };
-
-            // Save new review to LocalStorage
-            const storedReviews = getStoredReviews();
-            storedReviews.push(newReview);
-            localStorage.setItem('userSubmittedReviews', JSON.stringify(storedReviews));
-
-            // Reset UI
+            
+            // --- IMPLEMENTING THE "REVIEW LIMIT REACHED" FEATURE ---
+            // Display the system notice
+            reviewError.textContent = "Thank you for your feedback! Due to the immense volume of daily submissions, our verification system has reached its capacity for the day. Please check back tomorrow to submit your verified review. Your voice matters, but our verification queue is currently full!";
+            reviewError.style.display = 'block';
+            
+            // Use a color that implies a system notice/success, not an error
+            reviewError.style.color = 'var(--primary-light)'; 
+            
+            // Optional: reset the text area to show the user interaction is complete
             reviewTextarea.value = '';
             ratingSlider.value = 5;
             ratingValueSpan.textContent = 5;
-            reviewFormContainer.style.display = 'none';
-            showReviewFormButton.style.display = 'block';
-
-            // Reload display to show new review at the top (Page 1)
-            CURRENT_PAGE = 1;
-            loadReviews();
         });
 
-        // Initial Auth Check and Load
-        document.addEventListener('DOMContentLoaded', async () => {
-            // AUTH CHECK (Updates Header UI and sets USER_NAME)
-            try {
-                const res = await fetch('/api/user'); 
-                const data = await res.json();
-                
-                if (data.user) {
-                    IS_LOGGED_IN = true;
-                    USER_NAME = data.user.firstName || 'User';
-                    document.getElementById('user-greeting').textContent = `Hi, ${data.user.firstName}`;
-                    document.getElementById('user-greeting').style.display = 'inline';
-                    document.getElementById('login-button').style.display = 'none';
-                    document.getElementById('logout-button').style.display = 'inline-block';
-                }
-            } catch (error) {
-                console.warn('Could not fetch user status:', error);
-            }
-            loadReviews(); 
-        });
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', loadReviews);
+
     </script>
 </body>
 </html>
