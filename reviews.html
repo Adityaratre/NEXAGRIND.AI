@@ -186,7 +186,7 @@
         let USER_NAME = 'Guest User';
         let CURRENT_PAGE = 1;
         const REVIEWS_PER_PAGE = 10; // Only show 10 reviews per page
-        let ALL_REVIEWS_SORTED = []; // Global array to hold all reviews after sorting
+        let ALL_REVIEWS_SORTED = []; 
         
         // Data structure for generating authentic Indian reviews
         const SIMULATED_NAMES = [
@@ -207,8 +207,8 @@
                 "The Decision Flow agent is phenomenal. I generated a full 30-day plan for a startup pitch deck—it was structured, logical, and ready to implement.",
             ],
             mixed_reviews: [
-                "The chat response quality is excellent, but I wish the risk card offered more details on local city regulations. Good starting point, but needs more localized Indian data.",
                 "The app sometimes takes 5-6 seconds to generate a solution. I understand the complexity, but it could be faster. The history feature works well, though.",
+                "The dark UI is a bit too intense. Maybe a light mode option would be nice. Functionality is top-notch.",
                 "The Audit Cost feature is great, but the calculation seemed slightly off on my complex tax document. Still provided good guidance.",
             ],
         };
@@ -222,7 +222,6 @@
         const reviewFormContainer = document.getElementById('review-form-container');
         const showReviewFormButton = document.getElementById('show-review-form');
         const reviewForm = document.getElementById('review-form');
-        const reviewTextarea = document.getElementById('review-text');
         const ratingSlider = document.getElementById('rating-slider');
         const ratingValueSpan = document.getElementById('rating-value');
         const reviewError = document.getElementById('review-error');
@@ -258,7 +257,7 @@
             card.className = `review-card ${rating < 4 ? 'low-rating' : ''}`;
             card.innerHTML = `
                 <div class="review-header">
-                    <span class="reviewer-name" style="color: ${rating > 3 ? 'var(--primary-light)' : 'var(--error-color)'}">${name}</span>
+                    <span class="reviewer-name">${name}</span>
                     <span class="review-date">${date}</span>
                 </div>
                 <div class="rating-stars">${generateStars(rating)}</div>
@@ -272,7 +271,7 @@
         function getCombinedAndSortedReviews(sortType) {
             
             const dates = [];
-            for (let i = 0; i < 365; i++) { // Generate dates over a year for realism
+            for (let i = 0; i < 365; i++) { // Generate dates array over a year for realism
                 const d = new Date();
                 d.setDate(d.getDate() - i);
                 dates.push(d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }));
@@ -315,7 +314,8 @@
             const sortType = sortBySelect.value;
             ALL_REVIEWS_SORTED = getCombinedAndSortedReviews(sortType);
             
-            const totalReviews = ALL_REVIEWS_SORTED.length + SIMULATED_DATA.total_count;
+            const totalUserReviews = getStoredReviews().length;
+            const totalReviews = SIMULATED_DATA.total_count + totalUserReviews;
             
             // Calculate total pages
             const totalPages = Math.ceil(ALL_REVIEWS_SORTED.length / REVIEWS_PER_PAGE);
@@ -334,21 +334,18 @@
                 reviewGrid.appendChild(createReviewCard(r.name, r.text, r.rating, r.date));
             });
             
-            // --- UI Updates (FIXES 2 & 3) ---
+            // --- UI Updates (FIXES 1 & 2) ---
             
             // FIX 2: Real-time Total Count
-            totalReviewsCount.textContent = `Trusted by over ${SIMULATED_DATA.total_count + getStoredReviews().length} users.`;
+            totalReviewsCount.textContent = `Trusted by over ${totalReviews.toLocaleString('en-IN')} users.`;
             
-            // Pagination Controls Update
-            displayCount.textContent = reviewsToDisplay.length;
+            // FIX 1: Pagination Controls Update
             pageInfoSpan.textContent = `Page ${CURRENT_PAGE} of ${totalPages || 1}`;
             prevPageButton.disabled = CURRENT_PAGE === 1;
             nextPageButton.disabled = CURRENT_PAGE >= totalPages;
-
-            // FIX 3: Slider value update is handled in listener below
         }
 
-        // --- Event Listeners for UI and Storage ---
+        // --- Event Listeners and Setup ---
 
         // FIX 3: Slider feedback must update the span immediately
         ratingSlider.addEventListener('input', () => {
@@ -380,7 +377,7 @@
             }
             reviewFormContainer.style.display = 'block';
             showReviewFormButton.style.display = 'none';
-            reviewError.style.display = 'none'; 
+            reviewError.style.display = 'none'; // Clear error on show
         });
 
         // Submit Review Logic (FIX 2: Updates total count instantly)
@@ -422,6 +419,7 @@
 
         // Initial Auth Check and Load
         document.addEventListener('DOMContentLoaded', async () => {
+            // AUTH CHECK (Updates Header UI and sets USER_NAME)
             try {
                 const res = await fetch('/api/user'); 
                 const data = await res.json();
