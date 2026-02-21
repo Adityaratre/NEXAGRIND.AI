@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaGrind | Pro Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #00bcd4; --bg: #0b0f1a; --card: rgba(30, 30, 30, 0.6); }
+        /* FIXED: Changed overflow-hidden to overflow-x-hidden to allow vertical scrolling */
+        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; transition: all 0.3s ease; overflow-x: hidden; }
+        .glass { background: var(--card); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .accent-text { background: linear-gradient(135deg, #00bcd4, #4dd0e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        input[type="checkbox"] { cursor: pointer; accent-color: var(--primary); transform: scale(1.2); }
+        
+        /* Sidebar Toggle Classes */
+        .sidebar-minimized { width: 80px !important; }
+        .sidebar-minimized .nav-text, .sidebar-minimized .logo-text, .sidebar-minimized #user-info { display: none; }
+        .sidebar-minimized .nav-item { justify-content: center; }
+
+        /* Smooth Scrolling */
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="min-h-screen flex">
+
+    <aside id="sidebar" class="w-64 glass border-r border-white/10 flex flex-col p-6 sticky top-0 h-screen transition-all duration-300 z-50">
+        <div class="flex items-center justify-between mb-10">
+            <span class="text-2xl font-bold text-[#00bcd4] logo-text">🧠 NexaGrind</span>
+            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white">≡</button>
+        </div>
+        
+        <nav class="flex-1 space-y-2 overflow-y-auto">
+            <a href="/" class="nav-item flex items-center gap-3 p-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition">
+                <span>🏠</span> <span class="nav-text">Home</span>
+            </a>
+            <a href="/app.html" class="nav-item flex items-center gap-3 p-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition">
+                <span>⚡</span> <span class="nav-text">Get Help</span>
+            </a>
+            <a href="/tracker.html" class="nav-item flex items-center gap-3 p-3 rounded-xl bg-[#00bcd4]/10 text-[#00bcd4] font-bold">
+                <span>📈</span> <span class="nav-text">Pro Tracker</span>
+            </a>
+            <a href="/reviews.html" class="nav-item flex items-center gap-3 p-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition">
+                <span>⭐</span> <span class="nav-text">Reviews</span>
+            </a>
+            <a href="/contact.html" class="nav-item flex items-center gap-3 p-3 rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition">
+                <span>📧</span> <span class="nav-text">Contact</span>
+            </a>
+        </nav>
+
+        <div class="pt-6 border-t border-white/10 mt-auto">
+            <div id="user-info" class="mb-4 text-[10px] text-slate-500 truncate">Not logged in</div>
+            <a href="/auth/logout" class="text-xs text-red-400 hover:text-red-300">Logout</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-10">
+        <div class="max-w-6xl mx-auto">
+            
+            <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+                <div>
+                    <h1 class="text-4xl font-black tracking-tighter accent-text">WEEKLY GRIND</h1>
+                    <p id="week-label" class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-2"></p>
+                </div>
+                
+                <div class="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+                    <button onclick="changeWeek(-1)" class="hover:bg-slate-800 px-3 py-1 rounded-lg">←</button>
+                    <span id="date-range" class="text-xs font-mono font-bold text-[#00bcd4] px-2">---</span>
+                    <button id="next-week-btn" onclick="changeWeek(1)" class="hover:bg-slate-800 px-3 py-1 rounded-lg">→</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                <div class="glass p-6 rounded-2xl text-center">
+                    <p class="text-[10px] text-slate-500 uppercase mb-2">Efficiency</p>
+                    <div class="relative flex justify-center items-center">
+                        <canvas id="efficiencyChart" width="120" height="120"></canvas>
+                        <div id="total-percent" class="absolute text-2xl font-black italic">0%</div>
+                    </div>
+                </div>
+                <div class="glass p-6 rounded-2xl flex flex-col justify-center items-center">
+                    <p class="text-[10px] text-slate-500 uppercase mb-2">Day Streak</p>
+                    <span id="streak-count" class="text-4xl font-black text-orange-400">0</span>
+                    <p class="text-[10px] mt-2">Days Completed</p>
+                </div>
+                <div class="lg:col-span-2 glass p-6 rounded-2xl">
+                    <p class="text-[10px] text-slate-500 uppercase mb-4">Daily Activity Intensity</p>
+                    <canvas id="activityBarChart" height="80"></canvas>
+                </div>
+            </div>
+
+            <div class="glass rounded-3xl overflow-hidden shadow-2xl mb-10">
+                <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                    <h2 class="font-bold">Active Habits</h2>
+                    <button onclick="toggleEditMode()" id="edit-btn" class="text-[10px] border border-[#00bcd4]/30 px-3 py-1 rounded-full text-[#00bcd4]">Edit</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-white/5">
+                            <tr>
+                                <th class="p-4 text-[10px] text-slate-400 uppercase">Habit</th>
+                                <th class="p-4 text-center text-xs">M</th>
+                                <th class="p-4 text-center text-xs">T</th>
+                                <th class="p-4 text-center text-xs">W</th>
+                                <th class="p-4 text-center text-xs">T</th>
+                                <th class="p-4 text-center text-xs">F</th>
+                                <th class="p-4 text-center text-xs text-blue-300">S</th>
+                                <th class="p-4 text-center text-xs text-blue-400">S</th>
+                            </tr>
+                        </thead>
+                        <tbody id="habit-body"></tbody>
+                    </table>
+                </div>
+                <div id="add-habit-ctrl" class="hidden p-4 bg-white/5 border-t border-white/5">
+                    <div class="flex gap-2">
+                        <input type="text" id="new-habit-name" placeholder="Add habit..." class="flex-1 bg-black/40 border border-slate-700 rounded-lg px-4 py-2 text-sm">
+                        <button onclick="addHabit()" class="bg-[#00bcd4] text-black px-4 py-2 rounded-lg font-bold text-sm">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let USER_EMAIL = 'public';
+        let currentWeekOffset = 0;
+        let isEditMode = false;
+        let habits = [];
+        let charts = {};
+
+        async function init() {
+            await fetchUser();
+            loadHabits();
+            render();
+        }
+
+        async function fetchUser() {
+            try {
+                const res = await fetch('/api/user');
+                const data = await res.json();
+                if (data.user) {
+                    USER_EMAIL = data.user.email;
+                    document.getElementById('user-info').innerText = USER_EMAIL;
+                }
+            } catch (e) { console.log("Guest mode"); }
+        }
+
+        function getDataKey(id) { return `nexa_${USER_EMAIL}_${id}`; }
+
+        function loadHabits() {
+            const saved = localStorage.getItem(getDataKey('habits'));
+            habits = saved ? JSON.parse(saved) : ["NexaGrind AI", "BBA Studies", "Market Research"];
+        }
+
+        function getStartOfWeek(offset = 0) {
+            const now = new Date();
+            const day = now.getDay() || 7;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - day + 1 + (offset * 7));
+            monday.setHours(0,0,0,0);
+            return monday;
+        }
+
+        function toggleSidebar() { 
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('sidebar-minimized'); 
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            document.getElementById('edit-btn').innerText = isEditMode ? "Done" : "Edit";
+            document.getElementById('add-habit-ctrl').classList.toggle('hidden');
+            render();
+        }
+
+        function addHabit() {
+            const input = document.getElementById('new-habit-name');
+            if(input.value.trim()) {
+                habits.push(input.value.trim());
+                localStorage.setItem(getDataKey('habits'), JSON.stringify(habits));
+                input.value = ''; render();
+            }
+        }
+
+        function deleteHabit(idx) {
+            habits.splice(idx, 1);
+            localStorage.setItem(getDataKey('habits'), JSON.stringify(habits));
+            render();
+        }
+
+        function render() {
+            const start = getStartOfWeek(currentWeekOffset);
+            const end = new Date(start); end.setDate(start.getDate() + 6);
+            
+            document.getElementById('week-label').innerText = `Week of ${start.toLocaleDateString()}`;
+            document.getElementById('date-range').innerText = `${start.getDate()} - ${end.getDate()} ${start.toLocaleString('default', { month: 'short' })}`;
+            
+            document.getElementById('next-week-btn').style.opacity = currentWeekOffset >= 0 ? "0.2" : "1";
+            document.getElementById('next-week-btn').disabled = currentWeekOffset >= 0;
+
+            let html = '';
+            habits.forEach((habit, hIdx) => {
+                html += `<tr class="border-b border-white/5">
+                    <td class="p-4 flex items-center gap-2">
+                        ${isEditMode ? `<button onclick="deleteHabit(${hIdx})" class="text-red-500">✕</button>` : ''}
+                        <span class="text-sm font-medium">${habit}</span>
+                    </td>`;
+                for (let d = 0; d < 7; d++) {
+                    const id = getDataKey(`h-${habit}-w${start.getTime()}-d${d}`);
+                    const checked = localStorage.getItem(id) === 'true' ? 'checked' : '';
+                    html += `<td class="p-4 text-center"><input type="checkbox" ${checked} onchange="saveTick('${id}')"></td>`;
+                }
+                html += '</tr>';
+            });
+            document.getElementById('habit-body').innerHTML = html;
+            updateAnalytics();
+        }
+
+        function saveTick(id) {
+            const cb = event.target;
+            localStorage.setItem(id, cb.checked);
+            updateAnalytics();
+        }
+
+        function changeWeek(dir) {
+            currentWeekOffset += dir;
+            render();
+        }
+
+        function updateAnalytics() {
+            const start = getStartOfWeek(currentWeekOffset);
+            const checks = document.querySelectorAll('input[type="checkbox"]');
+            const total = checks.length;
+            const done = Array.from(checks).filter(c => c.checked).length;
+            const percent = total > 0 ? Math.round((done/total)*100) : 0;
+            
+            document.getElementById('total-percent').innerText = percent + "%";
+
+            if(charts.eff) charts.eff.destroy();
+            charts.eff = new Chart(document.getElementById('efficiencyChart'), {
+                type: 'doughnut',
+                data: { datasets: [{ data: [done, total-done || 1], backgroundColor: ['#00bcd4', '#1e293b'], borderWidth: 0 }] },
+                options: { cutout: '80%', plugins: { legend: { display: false } } }
+            });
+
+            const dailyData = Array.from({length:7}, (_, d) => {
+                let dayDone = 0;
+                habits.forEach(h => {
+                    if(localStorage.getItem(getDataKey(`h-${h}-w${start.getTime()}-d${d}`)) === 'true') dayDone++;
+                });
+                return dayDone;
+            });
+
+            if(charts.bar) charts.bar.destroy();
+            charts.bar = new Chart(document.getElementById('activityBarChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['M','T','W','T','F','S','S'],
+                    datasets: [{ label: 'Habits Done', data: dailyData, backgroundColor: '#00bcd4', borderRadius: 5 }]
+                },
+                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#64748b' } } } }
+            });
+
+            const activeDays = dailyData.filter(v => v > 0).length;
+            document.getElementById('streak-count').innerText = activeDays;
+        }
+
+        init();
+    </script>
+</body>
+</html>
