@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaGrind.AI – Tools</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #00bcd4; --bg-dark: #0f0f0f; 
+            --bg-card: #1a1a1a; --bg-input: #242424; 
+            --text-light: #f0f0f0; --text-secondary: #a0a0a0; 
+            --border-color: #2a2a2a; --solution-color: #4CAF50;
+            --business-color: #ff9800; --study-color: #e91e63;
+            --summarize-color: #5c3dbb;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-light); min-height: 100vh; }
+
+        /* FIXED TOP NAVIGATION */
+        .header-stack {
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;
+            background: #121212; border-bottom: 2px solid var(--border-color);
+        }
+        header { padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary-color); text-decoration: none; }
+        .main-menu { display: flex; gap: 15px; align-items: center; }
+        .menu-link { color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; }
+        .back-btn { background: #333; padding: 6px 14px; border-radius: 4px; color: #fff; font-weight: bold; }
+
+        .tool-nav-bar { border-bottom: 2px solid var(--border-color); background: #1a1a1a; }
+        .tool-nav { display: flex; gap: 10px; padding: 12px 0; overflow-x: auto; scrollbar-width: none; }
+        .tool-nav::-webkit-scrollbar { display: none; }
+        .tab-btn { padding: 10px 20px; border: 1px solid var(--border-color); background: #222; color: var(--text-secondary); border-radius: 20px; cursor: pointer; white-space: nowrap; transition: 0.3s; font-size: 0.85rem; }
+        .tab-btn.active { background: var(--primary-color); color: #000; font-weight: 700; border-color: var(--primary-color); }
+
+        .content-spacer { height: 140px; }
+        main { padding-bottom: 60px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        .tool-panel { display: none; animation: fadeIn 0.4s ease; margin-top: 20px; }
+        .tool-panel.active { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); padding: 25px; border-radius: 12px; height: fit-content; }
+        
+        /* Title with Delete Icon */
+        .tool-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .tool-title { 
+            font-size: 1.1rem; text-transform: uppercase; 
+            letter-spacing: 1.5px; display: flex; align-items: center; gap: 10px; 
+            color: #fff; font-weight: 800;
+        }
+        .tool-title::before { content: ''; width: 5px; height: 18px; border-radius: 2px; background: currentColor; }
+        
+        .delete-icon { 
+            cursor: pointer; padding: 5px; border-radius: 50%; transition: 0.2s; 
+            fill: var(--text-secondary); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+        }
+        .delete-icon:hover { background: rgba(255, 68, 68, 0.2); fill: #ff4444; }
+
+        textarea { width: 100%; height: 200px; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; resize: none; margin-bottom: 15px; font-size: 1rem; }
+        .btn { width: 100%; padding: 16px; font-size: 0.95rem; font-weight: 800; border: none; border-radius: 8px; cursor: pointer; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .history-header h3 { font-size: 0.9rem; color: var(--text-secondary); text-transform: uppercase; }
+        .clear-btn { background: none; border: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .clear-btn:hover { background: #ff4444; color: #fff; border-color: #ff4444; }
+
+        .history-item { padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: 0.2s; border-radius: 6px; margin-bottom: 5px; }
+        .history-item:hover { background: var(--bg-input); }
+        .history-item strong { display: block; color: var(--primary-color); margin-bottom: 3px; font-size: 0.85rem; }
+
+        .calc-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .calc-group label { display: block; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 700; }
+        .calc-group input { width: 100%; padding: 12px; border-radius: 6px; background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; font-size: 1rem; }
+
+        @media (max-width: 850px) { 
+            .tool-panel.active { grid-template-columns: 1fr; } 
+            .main-menu { display: none; }
+            .content-spacer { height: 120px; }
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="header-stack">
+        <header>
+            <div class="container navbar">
+                <a href="/app.html" class="logo">🧠 NEXAGRIND</a>
+                <nav class="main-menu">
+                    <a href="/app.html" class="menu-link">Get Help</a>
+                    <a href="/tracker.html" class="menu-link">Tracker</a>
+                    <a href="/contact.html" class="menu-link">Contact</a>
+                    <a href="/app.html" class="back-btn">← Back</a>
+                </nav>
+            </div>
+        </header>
+        <div class="tool-nav-bar">
+            <div class="container tool-nav">
+                <button class="tab-btn active" onclick="switchTool(event, 'business')">Business Agent</button>
+                <button class="tab-btn" onclick="switchTool(event, 'revenue')">Revenue Calculator</button>
+                <button class="tab-btn" onclick="switchTool(event, 'study')">Study Buddy</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-spacer"></div>
+
+    <main class="container">
+        <section id="business-panel" class="tool-panel active">
+            <div class="card">
+                <div class="tool-header">
+                    <div class="tool-title" style="color:var(--business-color)">Business Agent</div>
+                    <div class="delete-icon" title="Clear Text" onclick="clearToolInputs('business')">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    </div>
+                </div>
+                <textarea id="business-input" placeholder="Enter business idea for SWOT analysis..."></textarea>
+                <button class="btn" style="background:var(--business-color)" onclick="runAI('swot')">Generate SWOT Analysis</button>
+                <div id="business-output" style="margin-top:20px; display:none; background: #000; padding: 15px; border-radius: 8px;"></div>
+            </div>
+            <div class="card">
+                <div class="history-header">
+                    <h3>SWOT History</h3>
+                    <button class="clear-btn" onclick="clearHistory('business')">Clear History</button>
+                </div>
+                <div id="business-history"></div>
+            </div>
+        </section>
+
+        <section id="revenue-panel" class="tool-panel">
+            <div class="card">
+                <div class="tool-header">
+                    <div class="tool-title" style="color:var(--solution-color)">Revenue Calculator</div>
+                    <div class="delete-icon" title="Clear All Numbers" onclick="clearToolInputs('revenue')">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    </div>
+                </div>
+                <div class="calc-wrapper">
+                    <div class="calc-group"><label>SALE PRICE (₹)</label><input type="number" id="calc-price" placeholder="Enter Price"></div>
+                    <div class="calc-group"><label>PROD. COST (₹)</label><input type="number" id="calc-cost" placeholder="Enter Cost"></div>
+                    <div class="calc-group"><label>SHIPPING (₹)</label><input type="number" id="calc-ship" placeholder="Enter Shipping"></div>
+                    <div class="calc-group"><label>MARKETING (₹)</label><input type="number" id="calc-ads" placeholder="Enter Marketing"></div>
+                </div>
+                <button class="btn" style="background:var(--solution-color)" onclick="calculateProfit()">Calculate Profit</button>
+                <div id="revenue-output" style="margin-top:20px; display:none; background: #000; padding: 15px; border-radius: 8px;"></div>
+            </div>
+            <div class="card">
+                <div class="history-header">
+                    <h3>Profit History</h3>
+                    <button class="clear-btn" onclick="clearHistory('revenue')">Clear History</button>
+                </div>
+                <div id="revenue-history"></div>
+            </div>
+        </section>
+
+        <section id="study-panel" class="tool-panel">
+            <div class="card">
+                <div class="tool-header">
+                    <div class="tool-title" style="color:var(--study-color)">Study Buddy</div>
+                    <div class="delete-icon" title="Clear Text" onclick="clearToolInputs('study')">
+                        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    </div>
+                </div>
+                <textarea id="study-input" placeholder="Paste notes or YouTube URL..."></textarea>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn" style="background:var(--study-color)" onclick="runAI('flash')">Flashcards</button>
+                    <button class="btn" style="background:var(--summarize-color)" onclick="runAI('yt')">YT Summary</button>
+                </div>
+                <div id="study-output" style="margin-top:20px; display:none; background: #000; padding: 15px; border-radius: 8px;"></div>
+            </div>
+            <div class="card">
+                <div class="history-header">
+                    <h3>Study History</h3>
+                    <button class="clear-btn" onclick="clearHistory('study')">Clear History</button>
+                </div>
+                <div id="study-history"></div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function switchTool(evt, toolId) {
+            document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(toolId + '-panel').classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        function clearToolInputs(tool) {
+            if(tool === 'revenue') {
+                document.getElementById('calc-price').value = "";
+                document.getElementById('calc-cost').value = "";
+                document.getElementById('calc-ship').value = "";
+                document.getElementById('calc-ads').value = "";
+                document.getElementById('revenue-output').style.display = "none";
+            } else {
+                document.getElementById(tool + '-input').value = "";
+                document.getElementById(tool + '-output').style.display = "none";
+            }
+        }
+
+        async function runAI(type) {
+            const panel = (type === 'swot') ? 'business' : 'study';
+            const text = document.getElementById(panel + '-input').value;
+            const out = document.getElementById(panel + '-output');
+            if(!text) return;
+            out.style.display = "block";
+            out.innerHTML = "Processing...";
+            try {
+                const res = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, prompt: type === 'swot' ? "SWOT Analysis" : "Study Help" })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    out.innerHTML = DOMPurify.sanitize(marked.parse(data.content));
+                    saveHistory(panel, text, data.content);
+                }
+            } catch (e) { out.innerHTML = "Error."; }
+        }
+
+        function calculateProfit() {
+            const p = parseFloat(document.getElementById('calc-price').value) || 0;
+            const c = parseFloat(document.getElementById('calc-cost').value) || 0;
+            const s = parseFloat(document.getElementById('calc-ship').value) || 0;
+            const a = parseFloat(document.getElementById('calc-ads').value) || 0;
+            const profit = p - (c + s + a);
+            const resText = `Profit: ₹${profit}`;
+            document.getElementById('revenue-output').style.display = "block";
+            document.getElementById('revenue-output').innerHTML = `<strong>${resText}</strong>`;
+            saveHistory('revenue', `Profit Check`, resText);
+        }
+
+        function saveHistory(tool, query, result) {
+            const history = JSON.parse(localStorage.getItem('nexa_' + tool) || "[]");
+            history.unshift({ query: query.substring(0, 25), time: new Date().toLocaleTimeString() });
+            localStorage.setItem('nexa_' + tool, JSON.stringify(history.slice(0, 10)));
+            loadHistory(tool);
+        }
+
+        function loadHistory(tool) {
+            const history = JSON.parse(localStorage.getItem('nexa_' + tool) || "[]");
+            const histDiv = document.getElementById(tool + '-history');
+            if(histDiv) {
+                histDiv.innerHTML = history.length ? history.map(h => `<div class="history-item"><strong>${h.query}...</strong><small>${h.time}</small></div>`).join('') : '<p style="font-size:0.75rem; color:var(--text-secondary)">No history yet.</p>';
+            }
+        }
+
+        function clearHistory(tool) {
+            localStorage.removeItem('nexa_' + tool);
+            loadHistory(tool);
+        }
+
+        window.onload = () => ['business', 'revenue', 'study'].forEach(loadHistory);
+    </script>
+</body>
+</html>
