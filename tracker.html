@@ -2,33 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NexaGrind | Pro Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #00bcd4; --bg: #0b0f1a; --card: rgba(30, 30, 30, 0.6); }
-        /* FIXED: Changed overflow-hidden to overflow-x-hidden to allow vertical scrolling */
-        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; transition: all 0.3s ease; overflow-x: hidden; }
+        body { background-color: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         .glass { background: var(--card); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .accent-text { background: linear-gradient(135deg, #00bcd4, #4dd0e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         input[type="checkbox"] { cursor: pointer; accent-color: var(--primary); transform: scale(1.2); }
         
-        /* Sidebar Toggle Classes */
-        .sidebar-minimized { width: 80px !important; }
-        .sidebar-minimized .nav-text, .sidebar-minimized .logo-text, .sidebar-minimized #user-info { display: none; }
-        .sidebar-minimized .nav-item { justify-content: center; }
+        /* SIDEBAR LOGIC - PC VS MOBILE */
+        #sidebar {
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
 
-        /* Smooth Scrolling */
+        /* Desktop Sidebar (Restored) */
+        @media (min-width: 769px) {
+            #sidebar {
+                position: sticky;
+                top: 0;
+                height: 100vh;
+                width: 256px; /* w-64 */
+            }
+            .sidebar-minimized { width: 80px !important; }
+            .sidebar-minimized .nav-text, .sidebar-minimized .logo-text, .sidebar-minimized #user-info { display: none; }
+            .sidebar-minimized .nav-item { justify-content: center; }
+            .mobile-header, .mobile-overlay { display: none; }
+        }
+
+        /* Mobile Sidebar (Slide-out) */
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                width: 260px;
+                background: #0b0f1a; /* Solid bg for mobile visibility */
+            }
+            #sidebar.open { left: 0; }
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.7);
+                z-index: 90;
+            }
+            .mobile-overlay.open { display: block; }
+            .desktop-toggle { display: none; }
+        }
+
         html { scroll-behavior: smooth; }
     </style>
 </head>
-<body class="min-h-screen flex">
+<body class="min-h-screen flex flex-col md:flex-row">
 
-    <aside id="sidebar" class="w-64 glass border-r border-white/10 flex flex-col p-6 sticky top-0 h-screen transition-all duration-300 z-50">
+    <div class="mobile-header md:hidden glass p-4 flex justify-between items-center sticky top-0 z-[60]">
+        <span class="text-xl font-bold text-[#00bcd4]">🧠 NexaGrind</span>
+        <button onclick="toggleSidebar()" class="text-2xl text-[#00bcd4]">≡</button>
+    </div>
+
+    <div id="overlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="glass border-r border-white/10 flex flex-col p-6 transition-all duration-300">
         <div class="flex items-center justify-between mb-10">
             <span class="text-2xl font-bold text-[#00bcd4] logo-text">🧠 NexaGrind</span>
-            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white">≡</button>
+            <button onclick="toggleSidebar()" class="desktop-toggle text-slate-400 hover:text-white text-xl">≡</button>
+            <button onclick="toggleSidebar()" class="md:hidden text-white text-xl">✕</button>
         </div>
         
         <nav class="flex-1 space-y-2 overflow-y-auto">
@@ -55,27 +98,27 @@
         </div>
     </aside>
 
-    <main class="flex-1 p-6 md:p-10">
+    <main class="flex-1 p-4 md:p-10 w-full overflow-y-auto">
         <div class="max-w-6xl mx-auto">
             
-            <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
                 <div>
-                    <h1 class="text-4xl font-black tracking-tighter accent-text">WEEKLY GRIND</h1>
+                    <h1 class="text-3xl md:text-4xl font-black tracking-tighter accent-text">WEEKLY GRIND</h1>
                     <p id="week-label" class="text-slate-500 font-bold uppercase tracking-widest text-[10px] mt-2"></p>
                 </div>
                 
-                <div class="flex items-center gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+                <div class="flex items-center justify-between w-full md:w-auto gap-2 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
                     <button onclick="changeWeek(-1)" class="hover:bg-slate-800 px-3 py-1 rounded-lg">←</button>
                     <span id="date-range" class="text-xs font-mono font-bold text-[#00bcd4] px-2">---</span>
                     <button id="next-week-btn" onclick="changeWeek(1)" class="hover:bg-slate-800 px-3 py-1 rounded-lg">→</button>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="glass p-6 rounded-2xl text-center">
                     <p class="text-[10px] text-slate-500 uppercase mb-2">Efficiency</p>
-                    <div class="relative flex justify-center items-center">
-                        <canvas id="efficiencyChart" width="120" height="120"></canvas>
+                    <div class="relative flex justify-center items-center mx-auto" style="width:120px; height:120px;">
+                        <canvas id="efficiencyChart"></canvas>
                         <div id="total-percent" class="absolute text-2xl font-black italic">0%</div>
                     </div>
                 </div>
@@ -84,19 +127,21 @@
                     <span id="streak-count" class="text-4xl font-black text-orange-400">0</span>
                     <p class="text-[10px] mt-2">Days Completed</p>
                 </div>
-                <div class="lg:col-span-2 glass p-6 rounded-2xl">
+                <div class="sm:col-span-2 glass p-6 rounded-2xl">
                     <p class="text-[10px] text-slate-500 uppercase mb-4">Daily Activity Intensity</p>
-                    <canvas id="activityBarChart" height="80"></canvas>
+                    <div style="height:120px;">
+                        <canvas id="activityBarChart"></canvas>
+                    </div>
                 </div>
             </div>
 
             <div class="glass rounded-3xl overflow-hidden shadow-2xl mb-10">
                 <div class="p-6 border-b border-white/5 flex justify-between items-center">
                     <h2 class="font-bold">Active Habits</h2>
-                    <button onclick="toggleEditMode()" id="edit-btn" class="text-[10px] border border-[#00bcd4]/30 px-3 py-1 rounded-full text-[#00bcd4]">Edit</button>
+                    <button onclick="toggleEditMode()" id="edit-btn" class="text-[10px] border border-[#00bcd4]/30 px-3 py-1 rounded-full text-[#00bcd4] uppercase">Edit</button>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left min-w-[600px]">
                         <thead class="bg-white/5">
                             <tr>
                                 <th class="p-4 text-[10px] text-slate-400 uppercase">Habit</th>
@@ -113,9 +158,9 @@
                     </table>
                 </div>
                 <div id="add-habit-ctrl" class="hidden p-4 bg-white/5 border-t border-white/5">
-                    <div class="flex gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <input type="text" id="new-habit-name" placeholder="Add habit..." class="flex-1 bg-black/40 border border-slate-700 rounded-lg px-4 py-2 text-sm">
-                        <button onclick="addHabit()" class="bg-[#00bcd4] text-black px-4 py-2 rounded-lg font-bold text-sm">Add</button>
+                        <button onclick="addHabit()" class="bg-[#00bcd4] text-black px-4 py-2 rounded-lg font-bold text-sm uppercase">Add Habit</button>
                     </div>
                 </div>
             </div>
@@ -164,7 +209,13 @@
 
         function toggleSidebar() { 
             const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('sidebar-minimized'); 
+            const overlay = document.getElementById('overlay');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('open');
+            } else {
+                sidebar.classList.toggle('sidebar-minimized'); 
+            }
         }
 
         function toggleEditMode() {
@@ -204,7 +255,7 @@
                 html += `<tr class="border-b border-white/5">
                     <td class="p-4 flex items-center gap-2">
                         ${isEditMode ? `<button onclick="deleteHabit(${hIdx})" class="text-red-500">✕</button>` : ''}
-                        <span class="text-sm font-medium">${habit}</span>
+                        <span class="text-xs md:text-sm font-medium">${habit}</span>
                     </td>`;
                 for (let d = 0; d < 7; d++) {
                     const id = getDataKey(`h-${habit}-w${start.getTime()}-d${d}`);
@@ -218,8 +269,7 @@
         }
 
         function saveTick(id) {
-            const cb = event.target;
-            localStorage.setItem(id, cb.checked);
+            localStorage.setItem(id, event.target.checked);
             updateAnalytics();
         }
 
@@ -241,7 +291,7 @@
             charts.eff = new Chart(document.getElementById('efficiencyChart'), {
                 type: 'doughnut',
                 data: { datasets: [{ data: [done, total-done || 1], backgroundColor: ['#00bcd4', '#1e293b'], borderWidth: 0 }] },
-                options: { cutout: '80%', plugins: { legend: { display: false } } }
+                options: { cutout: '80%', plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false }
             });
 
             const dailyData = Array.from({length:7}, (_, d) => {
@@ -259,7 +309,12 @@
                     labels: ['M','T','W','T','F','S','S'],
                     datasets: [{ label: 'Habits Done', data: dailyData, backgroundColor: '#00bcd4', borderRadius: 5 }]
                 },
-                options: { plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#64748b' } } } }
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }, 
+                    scales: { y: { display: false }, x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } } } 
+                }
             });
 
             const activeDays = dailyData.filter(v => v > 0).length;
