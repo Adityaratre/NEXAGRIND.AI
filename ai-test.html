@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaGrind.AI – Ultimate Premium Engine</title>
+    <style>
+        /* --- NEXAGRIND THEME VARIABLES --- */
+        :root {
+            --primary-color: #00bcd4; --primary-light: #4dd0e1;
+            --bg-dark: #121212; --bg-card: #1f1f1f; --bg-input: #282828; 
+            --text-light: #f0f0f0; --text-secondary: #a0a0a0; --border-color: #333333;
+            --cbt-answered: #22c55e; --cbt-not-answered: #ef4444; --cbt-marked: #8b5cf6; --cbt-unvisited: #e2e8f0;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-light); line-height: 1.6; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; width: 100%; }
+        
+        /* --- HEADER --- */
+        header { background-color: rgba(30, 30, 30, 0.98); backdrop-filter: blur(10px); padding: 15px 0; border-bottom: 1px solid var(--border-color); z-index: 1000; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+        .navbar { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--primary-color); text-decoration: none;}
+        .header-buttons { display: flex; align-items: center; gap: 15px; }
+        .nav-link { font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.3s ease; }
+        .nav-link:hover { color: var(--primary-color); }
+        .user-greeting { font-weight: 600; color: var(--text-light); }
+
+        /* --- SCREEN VIEWS --- */
+        .screen { display: none; padding: 40px 0; animation: fadeIn 0.4s ease; flex: 1; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- DASHBOARD UI --- */
+        .dash-nav { display: flex; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;}
+        .dash-tab { cursor: pointer; color: var(--text-secondary); font-weight: 600; padding: 10px 20px; border-radius: 8px 8px 0 0; transition: 0.2s; }
+        .dash-tab.active { color: var(--bg-dark); background: var(--primary-color); }
+
+        .config-card { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 25px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); overflow: hidden;}
+        .config-header { background: rgba(0, 188, 212, 0.05); padding: 18px 25px; font-weight: 700; font-size: 1.1rem; border-bottom: 1px solid var(--border-color); color: var(--primary-color); }
+        .config-body { padding: 25px; }
+        
+        .pill-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+        .pill { padding: 12px 24px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s ease; color: var(--text-light); user-select: none; }
+        .pill:hover { border-color: var(--primary-color); background: rgba(0, 188, 212, 0.05); }
+        .pill.selected { background: var(--primary-color); color: var(--bg-dark); border-color: var(--primary-color); font-weight: 700; box-shadow: 0 4px 10px rgba(0, 188, 212, 0.3); }
+        
+        /* PREMIUM 3-TIER SYLLABUS UI */
+        .syllabus-section { margin-bottom: 25px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .syllabus-title { font-size: 1.2rem; color: var(--primary-light); text-transform: uppercase; letter-spacing: 1px; font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px;}
+        
+        .category-wrapper { margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
+        .category-header { background: var(--bg-input); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 600; transition: 0.2s;}
+        .category-header:hover { background: #333333; }
+        .cat-chk { transform: scale(1.2); margin-right: 10px; cursor: pointer; accent-color: var(--primary-color);}
+        .acc-icon { color: var(--text-secondary); transition: transform 0.3s; }
+        .acc-icon.open { transform: rotate(180deg); color: var(--primary-color); }
+        
+        .category-body { padding: 15px; background: rgba(0,0,0,0.2); border-top: 1px solid var(--border-color); display: none; }
+        .syllabus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+
+        /* Custom Checkbox */
+        .topic-lbl { display: flex; align-items: center; cursor: pointer; color: var(--text-light); font-size: 0.95rem; user-select: none; position: relative; padding-left: 30px;}
+        .topic-lbl input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .checkmark { position: absolute; top: 0; left: 0; height: 20px; width: 20px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 4px; transition: 0.2s;}
+        .topic-lbl:hover input ~ .checkmark { border-color: var(--primary-color); }
+        .topic-lbl input:checked ~ .checkmark { background-color: var(--primary-color); border-color: var(--primary-color); }
+        .checkmark:after { content: ""; position: absolute; display: none; }
+        .topic-lbl input:checked ~ .checkmark:after { display: block; }
+        .topic-lbl .checkmark:after { left: 6px; top: 2px; width: 5px; height: 10px; border: solid var(--bg-dark); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+        
+        .btn-primary { width: 100%; padding: 18px; background: var(--primary-color); color: var(--bg-dark); font-size: 1.2rem; font-weight: 800; text-transform: uppercase; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; margin-top: 10px; box-shadow: 0 4px 15px rgba(0, 188, 212, 0.2); }
+        .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 188, 212, 0.4); }
+        
+        .resume-banner { display: none; background: linear-gradient(90deg, #1e293b, #0f172a); border: 1px solid var(--primary-color); padding: 20px; border-radius: 12px; margin-bottom: 25px; justify-content: space-between; align-items: center; }
+
+        /* --- SWITCH TOGGLE --- */
+        .switch-container { display: flex; align-items: center; gap: 15px; margin-top: 20px; background: var(--bg-input); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); width: fit-content;}
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* --- CBT EXAM INTERFACE --- */
+        #screen-cbt { padding: 0; display: none; flex-direction: column; height: calc(100vh - 65px); background: #ffffff; color: #333; overflow: hidden;}
+        #screen-cbt.active { display: flex; }
+        .cbt-topbar { background: #1e293b; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; flex-shrink: 0;}
+        .cbt-mode-badge { background: #ef4444; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; text-transform: uppercase; margin-left: 10px;}
+        .cbt-mode-badge.practice { background: #3b82f6; }
+        
+        .subject-tabs { display: flex; background: #f1f5f9; border-bottom: 1px solid #cbd5e1; flex-shrink: 0; overflow-x: auto;}
+        .sub-tab { padding: 12px 20px; font-weight: 600; color: #475569; cursor: pointer; border-right: 1px solid #cbd5e1; border-bottom: 3px solid transparent; white-space: nowrap;}
+        .sub-tab.active { color: #0f172a; background: white; border-bottom-color: var(--primary-color); }
+        
+        .cbt-layout { display: flex; flex: 1; overflow: hidden; }
+        .cbt-main { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #ccc; position: relative; }
+        .watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 4rem; color: rgba(0,0,0,0.04); font-weight: 900; pointer-events: none; z-index: 1;}
+        
+        .question-header { padding: 15px 25px; background: white; border-bottom: 1px solid #e2e8f0; font-weight: bold; font-size: 1.1rem; z-index: 2; display: flex; justify-content: space-between; flex-shrink: 0;}
+        .question-content { padding: 30px; flex: 1; overflow-y: auto; font-size: 1.15rem; z-index: 2; background: white;}
+        
+        .option-lbl { display: flex; align-items: center; padding: 15px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; transition: 0.2s; background: #fff;}
+        .option-lbl:hover { background: #f8fafc; border-color: #94a3b8; }
+        .option-lbl input { margin-right: 15px; transform: scale(1.3); cursor: pointer; }
+        
+        .option-lbl.correct-ans { background: #dcfce7; border-color: #22c55e; pointer-events: none;}
+        .option-lbl.wrong-ans { background: #fee2e2; border-color: #ef4444; pointer-events: none;}
+        .explanation-box { background: #f0f9ff; border-left: 4px solid #0ea5e9; padding: 20px; margin-top: 25px; border-radius: 0 8px 8px 0; display: none; font-size: 1rem; color: #334155;}
+        
+        .cbt-actions { padding: 15px 25px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; z-index: 2; flex-shrink: 0;}
+        .action-btn { padding: 12px 24px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.95rem; color: #333;}
+        .action-btn.green { background: var(--cbt-answered); color: white; border-color: #16a34a; }
+        .action-btn.purple { background: var(--cbt-marked); color: white; border-color: #7c3aed; }
+        .action-btn.blue { background: #3b82f6; color: white; border-color: #2563eb; }
+        .action-btn:hover { opacity: 0.9; }
+
+        .cbt-sidebar { width: 340px; display: flex; flex-direction: column; background: #f1f5f9; flex-shrink: 0;}
+        .candidate-info { padding: 20px; text-align: center; border-bottom: 1px solid #cbd5e1; background: white; flex-shrink: 0;}
+        .palette-area { padding: 20px; flex: 1; overflow-y: auto; }
+        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
+        
+        .q-node { width: 45px; height: 45px; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 1px solid #94a3b8; background: white; color: #333; font-size: 1rem; transition: transform 0.1s;}
+        .q-node:active { transform: scale(0.95); }
+        .q-node.answered { background: var(--cbt-answered); color: white; border: none; clip-path: polygon(50% 100%, 0 0, 100% 0); border-radius: 4px 4px 0 0; }
+        .q-node.not_answered { background: var(--cbt-not-answered); color: white; border: none; clip-path: polygon(50% 0, 100% 100%, 0 100%); border-radius: 0 0 4px 4px; }
+        .q-node.marked { background: var(--cbt-marked); color: white; border: none; border-radius: 50%; }
+
+        @media (max-width: 800px) {
+            .navbar { flex-direction: column; gap: 10px; }
+            .cbt-layout { flex-direction: column; }
+            .cbt-sidebar { width: 100%; height: 300px; border-top: 2px solid #ccc; border-left: none; }
+            .cbt-actions { flex-wrap: wrap; gap: 10px; }
+            .action-btn { width: 48%; text-align: center; padding: 12px 5px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <div class="container navbar">
+            <a href="/index.html" class="logo">🧠 NexaGrind.AI</a>
+            <div class="header-buttons">
+                <a href="/app.html" class="nav-link">Get Help</a> 
+                <a href="/tracker.html" class="nav-link">Tracker</a>
+                <span class="user-greeting">Hi, Aspirant</span>
+            </div>
+        </div>
+    </header>
+
+    <div id="screen-dashboard" class="screen active">
+        <div class="container">
+            <div class="dash-nav">
+                <div class="dash-tab active" onclick="switchDashTab('setup')">Test Setup</div>
+                <div class="dash-tab" onclick="switchDashTab('analytics'); loadAnalytics();">History & Analytics</div>
+            </div>
+
+            <div id="tab-setup">
+                <div class="resume-banner" id="resume-banner">
+                    <div>
+                        <h3 style="color: var(--primary-light);">Resume Incomplete Test</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">You have a paused test in progress.</p>
+                    </div>
+                    <button class="btn-primary" style="width: auto; margin: 0; padding: 12px 30px;" onclick="resumeCBT()">Resume Test</button>
+                </div>
+
+                <div class="config-card" style="border-color: var(--primary-light); box-shadow: 0 0 15px rgba(0, 188, 212, 0.2);">
+                    <div class="config-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h3 style="color: var(--text-light); margin-bottom: 5px;">Exam Mode vs Practice Mode</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem;">Practice mode lets you view solutions instantly during the test.</p>
+                        </div>
+                        <div class="pill-grid" id="mode-group">
+                            <div class="pill selected" onclick="selectPill('mode-group', this)" data-val="exam">Strict Exam Mode</div>
+                            <div class="pill" onclick="selectPill('mode-group', this)" data-val="practice" style="border-color: #3b82f6;">Chill Practice Mode</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-card">
+                    <div class="config-header">1. Select Target Exam & Type</div>
+                    <div class="config-body">
+                        <div class="pill-grid" id="exam-group" style="margin-bottom: 20px;">
+                            <div class="pill selected" onclick="setExam('CGL', this)">SSC CGL</div>
+                            <div class="pill" onclick="setExam('CHSL', this)">SSC CHSL</div>
+                            <div class="pill" onclick="setExam('Police', this)">Delhi Police / GD</div>
+                        </div>
+                        <div class="pill-grid" id="type-group">
+                            <div class="pill selected" onclick="setTestType('full', this)">Full Mock Test</div>
+                            <div class="pill" onclick="setTestType('sectional', this)">Sectional Test (Subject)</div>
+                            <div class="pill" onclick="setTestType('chapter', this)">Chapter-Wise Practice</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-card" id="dynamic-syllabus-container" style="display: none;">
+                    <div class="config-header">2. Select Specific Topics (Unchecked by Default)</div>
+                    <div class="config-body" id="syllabus-renderer">
+                        </div>
+                </div>
+
+                <div class="config-card">
+                    <div class="config-header">3. Test Settings & Difficulty</div>
+                    <div class="config-body">
+                        <p style="margin-bottom: 10px; color: var(--text-secondary); font-weight:bold;">Difficulty Level:</p>
+                        <div class="pill-grid" id="diff-group" style="margin-bottom: 25px;">
+                            <div class="pill" onclick="selectPill('diff-group', this)">Easy</div>
+                            <div class="pill selected" onclick="selectPill('diff-group', this)">TCS Pattern (Moderate)</div>
+                            <div class="pill" onclick="selectPill('diff-group', this)">Hard (Mains Level)</div>
+                        </div>
+
+                        <p style="margin-bottom: 10px; color: var(--text-secondary); font-weight:bold;">Number of Questions & Time:</p>
+                        <div class="pill-grid" id="q-group" style="margin-bottom: 20px;">
+                            <div class="pill selected" onclick="selectPill('q-group', this)" data-val="10" data-time="600">10 Qs (10 Min)</div>
+                            <div class="pill" onclick="selectPill('q-group', this)" data-val="25" data-time="1800">25 Qs (30 Min)</div>
+                            <div class="pill" onclick="selectPill('q-group', this)" data-val="100" data-time="3600">100 Qs (60 Min)</div>
+                        </div>
+
+                        <div class="switch-container">
+                            <label class="switch">
+                                <input type="checkbox" id="neg-marking-toggle" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <div>
+                                <span style="font-weight: 600; color: var(--text-light);">TCS Negative Marking (-0.5)</span><br>
+                                <small style="color: var(--text-secondary);">Applies only in Exam Mode.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="startNewCBT()">Create & Start Test</button>
+            </div>
+
+            <div id="tab-analytics" style="display: none;">
+                <h2 style="color: var(--primary-light); margin-bottom: 20px;">Performance Analytics</h2>
+                <div id="history-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-cbt" class="screen">
+        <div class="cbt-topbar">
+            <div>
+                NexaGrind Engine 
+                <span id="test-mode-badge" class="cbt-mode-badge">EXAM MODE</span>
+            </div>
+            <div style="color: #fbbf24; font-size: 1.2rem;">Time Left: <span id="cbt-timer">15:00</span></div>
+        </div>
+        
+        <div class="subject-tabs" id="subject-tabs"></div>
+
+        <div class="cbt-layout">
+            <div class="cbt-main">
+                <div class="watermark">NEXAGRIND SECURE</div>
+                <div class="question-header">
+                    <span>
+                        <span id="q-subject-display" style="color:#64748b; font-weight:normal; margin-right:10px;">Subject</span> 
+                        Question No. <span id="q-number-display" style="color: var(--primary-color); font-size:1.2rem;">1</span>
+                    </span>
+                </div>
+                
+                <div class="question-content">
+                    <p id="q-text" style="font-weight: 600; margin-bottom: 25px;">Loading...</p>
+                    <div id="options-container"></div>
+                    <div class="explanation-box" id="explanation-box">
+                        <strong>Solution & Logic:</strong> <span id="exp-text"></span>
+                    </div>
+                </div>
+
+                <div class="cbt-actions" id="cbt-actions">
+                    <div>
+                        <button class="action-btn purple" onclick="handleAction('marked')">Mark for Review</button>
+                        <button class="action-btn" onclick="clearResponse()">Clear</button>
+                        <button class="action-btn blue" id="btn-show-solution" style="display:none;" onclick="showInstantSolution()">Show Answer</button>
+                    </div>
+                    <button class="action-btn green" onclick="handleAction('answered')">Save & Next</button>
+                </div>
+                
+                <div class="cbt-actions" id="review-actions" style="display: none; justify-content: flex-end;">
+                    <button class="action-btn" onclick="moveToNext(true)">Next Question ➔</button>
+                </div>
+            </div>
+
+            <div class="cbt-sidebar">
+                <div class="candidate-info">
+                    <div style="width: 60px; height: 60px; background: #e2e8f0; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+                    <div style="font-weight: 800; color: #0f172a; font-size: 1rem;">Aspirant</div>
+                </div>
+                <div class="palette-area">
+                    <div style="font-weight: 800; color: #475569; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 10px; text-transform: uppercase; font-size: 0.85rem;">Question Palette</div>
+                    <div class="palette-grid" id="palette-grid"></div>
+                </div>
+                <div style="padding: 20px; background: white; border-top: 1px solid #cbd5e1;" id="submit-wrapper">
+                    <button class="btn-primary" style="margin:0; font-size:1rem; box-shadow:none;" onclick="submitExam()">Submit Exam</button>
+                </div>
+                <div style="padding: 20px; background: white; border-top: 1px solid #cbd5e1; display:none;" id="exit-review-wrapper">
+                    <button class="btn-primary" style="margin:0; font-size:1rem; background: #ef4444;" onclick="exitReview()">Exit Review Mode</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-result" class="screen container" style="text-align: center;">
+        <div class="config-card" style="padding: 50px; max-width: 800px; margin: 0 auto;">
+            <h1 style="color: var(--primary-color); font-size: 2.5rem; margin-bottom: 10px;">Test Complete!</h1>
+            
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; background: var(--bg-input); padding: 30px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                <div><h2 id="res-score" style="color: var(--primary-light); font-size: 2.5rem;">0</h2><p style="color: var(--text-secondary); font-weight:bold; text-transform:uppercase; font-size: 0.85rem;">Score</p></div>
+                <div><h2 id="res-acc" style="color: var(--cbt-answered); font-size: 2.5rem;">0%</h2><p style="color: var(--text-secondary); font-weight:bold; text-transform:uppercase; font-size: 0.85rem;">Accuracy</p></div>
+                <div><h2 id="res-attempted" style="color: white; font-size: 2.5rem;">0</h2><p style="color: var(--text-secondary); font-weight:bold; text-transform:uppercase; font-size: 0.85rem;">Attempted</p></div>
+            </div>
+
+            <div class="subject-breakdown" id="subject-breakdown" style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); text-align: left;">
+                <h3 style="color: var(--primary-light); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 10px;">Subject Accuracy Breakdown</h3>
+                </div>
+
+            <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
+                <button class="btn-primary" style="width: auto; padding: 15px 30px;" onclick="reviewExam()">View Solutions & Mistakes</button>
+                <button class="btn-primary" style="width: auto; padding: 15px 30px; background: #333; color: white;" onclick="window.location.reload()">Back to Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. FULL SSC CGL 3-TIER SYLLABUS ARCHITECTURE ---
+        const EXAM_SYLLABI = {
+            'CGL': {
+                'Maths': {
+                    'Number System': ['LCM & HCF', 'Divisibility', 'Simplification'],
+                    'Arithmetic': ['Percentage', 'Ratio & Proportion', 'Average', 'Profit & Loss', 'Discount', 'Partnership', 'Mixture & Alligation', 'Simple Interest', 'Compound Interest'],
+                    'Time Topics': ['Time & Work', 'Pipes & Cistern', 'Time, Speed & Distance', 'Boats & Streams'],
+                    'Algebra': ['Linear Equations', 'Identities', 'Surds & Indices'],
+                    'Geometry': ['Lines and Angles', 'Triangle', 'Circle', 'Quadrilateral', 'Polygon'],
+                    'Mensuration': ['Cube', 'Cuboid', 'Cylinder', 'Cone', 'Sphere'],
+                    'Trigonometry': ['Trigonometric Ratios', 'Heights and Distances'],
+                    'Data Interpretation': ['Table', 'Pie Chart', 'Bar Graph', 'Histogram']
+                },
+                'Reasoning': {
+                    'Verbal Reasoning': ['Analogy', 'Classification', 'Number Series', 'Alphabet Series', 'Coding-Decoding', 'Blood Relation', 'Direction Test', 'Ranking', 'Syllogism', 'Statement & Conclusion'],
+                    'Non-Verbal Reasoning': ['Mirror Image', 'Paper Folding', 'Embedded Figures', 'Figure Series'],
+                    'Logical Reasoning': ['Venn Diagram', 'Puzzle', 'Mathematical Operations']
+                },
+                'English': {
+                    'Grammar': ['Parts of Speech', 'Tenses', 'Subject-Verb Agreement', 'Active-Passive Voice', 'Direct & Indirect Speech'],
+                    'Vocabulary': ['Synonyms', 'Antonyms', 'One Word Substitution', 'Idioms & Phrases'],
+                    'Comprehension': ['Reading Comprehension', 'Cloze Test', 'Fill in the Blanks', 'Sentence Improvement', 'Error Detection', 'Para Jumbles']
+                },
+                'GK': {
+                    'History': ['Ancient India', 'Medieval India', 'Modern India', 'Freedom Movement'],
+                    'Geography': ['Indian Geography', 'World Geography'],
+                    'Polity': ['Constitution', 'Fundamental Rights', 'Parliament', 'President', 'Judiciary'],
+                    'Economy': ['Banking', 'Inflation', 'Budget', 'RBI', 'GDP'],
+                    'Science': ['Physics', 'Chemistry', 'Biology'],
+                    'Current Affairs': ['National News', 'International News', 'Sports', 'Awards', 'Government Schemes'],
+                    'Static GK': ['Important Days', 'Books & Authors', 'National Parks', 'Dance Forms']
+                }
+            },
+            'CHSL': {
+                'Maths': { 'General Maths': ['Arithmetic', 'Data Interpretation', 'Mensuration'] },
+                'Reasoning': { 'General Reasoning': ['Coding-Decoding', 'Venn Diagram', 'Non-Verbal'] },
+                'English': { 'Grammar & Vocab': ['Spelling Correction', 'One Word Substitution', 'Voice'] },
+                'GK': { 'General Awareness': ['Static GK', 'Economy', 'Sports'] }
+            },
+            'Police': {
+                'Maths': { 'Basic Numeracy': ['Number System', 'Average', 'Ratio'] },
+                'Reasoning': { 'Basic Reasoning': ['Non-Verbal', 'Direction Sense'] },
+                'GK': { 'General Knowledge': ['Delhi Specific GK', 'History', 'Current Affairs'] },
+                'Computer': { 'Basics': ['MS Word', 'Internet', 'Shortcuts', 'Hardware Basics'] }
+            }
+        };
+
+        // ENLARGED DATABASE FOR REALISTIC DEMO EXPERIENCE
+        const HARDCODED_BANK = [
+            // Reasoning
+            { sub: "Reasoning", cat: "Verbal Reasoning", topic: "Analogy", q: "FISH : DKGJ :: POND : ?", opts: ["NQLF", "OQME", "NPMF", "MQLF"], ans: 0, exp: "F->D(-2), I->K(+2), S->G(-12), H->J(+2). Applying to POND gives NQLF." },
+            { sub: "Reasoning", cat: "Verbal Reasoning", topic: "Number Series", q: "Missing number: 2, 6, 12, 20, 30, ?", opts: ["40", "42", "44", "46"], ans: 1, exp: "Differences are +4, +6, +8, +10. Next difference is +12. So, 30 + 12 = 42." },
+            { sub: "Reasoning", cat: "Verbal Reasoning", topic: "Coding-Decoding", q: "If 'CAB' is coded as 'DBC', how is 'LOG' coded?", opts: ["MPH", "MOG", "NPI", "KNF"], ans: 0, exp: "Each letter is shifted by +1. L(+1)=M, O(+1)=P, G(+1)=H." },
+            { sub: "Reasoning", cat: "Verbal Reasoning", topic: "Syllogism", q: "Statements: 1. All cats are dogs. 2. Some dogs are rats.\nConclusion: I. Some cats are rats.", opts: ["Only Conclusion I follows", "Neither follows", "Both follow", "Data inadequate"], ans: 1, exp: "Since there is no direct relation given between cats and rats, Conclusion I does not logically follow." },
+
+            // Maths
+            { sub: "Maths", cat: "Arithmetic", topic: "Percentage", q: "If the price of an item is increased by 20% and then decreased by 20%, what is the net change in price?", opts: ["No change", "4% Increase", "4% Decrease", "2% Decrease"], ans: 2, exp: "Use the successive change formula: x + y + (xy/100). +20 - 20 + (20 * -20)/100 = -400/100 = -4%." },
+            { sub: "Maths", cat: "Time Topics", topic: "Time & Work", q: "A and B can do a piece of work in 15 days and 20 days respectively. How long will they take working together?", opts: ["10 days", "8.57 days", "12 days", "7 days"], ans: 1, exp: "Formula: (A * B) / (A + B). (15 * 20) / (15 + 20) = 300 / 35 = 60/7 = 8.57 days." },
+            { sub: "Maths", cat: "Geometry", topic: "Lines and Angles", q: "If two supplementary angles are in the ratio 4:5, find the larger angle.", opts: ["80°", "100°", "120°", "90°"], ans: 1, exp: "Supplementary angles sum to 180°. Ratio is 4:5. 4x + 5x = 180 => 9x = 180 => x = 20. Larger angle = 5x = 5(20) = 100°." },
+            { sub: "Maths", cat: "Geometry", topic: "Triangle", q: "In a right-angled triangle, if the base is 3cm and height is 4cm, what is the hypotenuse?", opts: ["5cm", "6cm", "7cm", "25cm"], ans: 0, exp: "Pythagoras theorem: h² = p² + b². h² = 3² + 4² = 9 + 16 = 25. h = √25 = 5cm." },
+            { sub: "Maths", cat: "Algebra", topic: "Linear Equations", q: "If 2x + 3 = 11, what is the value of x²?", opts: ["4", "16", "8", "6"], ans: 1, exp: "2x = 11 - 3 => 2x = 8 => x = 4. Therefore, x² = 4² = 16." },
+
+            // English
+            { sub: "English", cat: "Vocabulary", topic: "Synonyms", q: "Select the synonym of the given word: 'LUCID'", opts: ["Confusing", "Clear", "Dark", "Murky"], ans: 1, exp: "'Lucid' means expressed clearly or easy to understand. Hence, 'Clear' is the correct synonym." },
+            { sub: "English", cat: "Vocabulary", topic: "Idioms & Phrases", q: "Meaning of the idiom: 'Bite the bullet'", opts: ["To get angry", "To endure a painful situation", "To eat fast", "To shoot a gun"], ans: 1, exp: "'Bite the bullet' means to decide to do something difficult or unpleasant that one has been putting off." },
+            { sub: "English", cat: "Grammar", topic: "Error Detection", q: "Identify the grammatical error: 'He did not went to the market yesterday.'", opts: ["He did not", "went to", "the market", "yesterday"], ans: 1, exp: "With 'did not', we always use the base form of the verb (V1). It should be 'He did not go'." },
+
+            // GK
+            { sub: "GK", cat: "History", topic: "Modern India", q: "Who is the author of the book 'India Wins Freedom'?", opts: ["Jawaharlal Nehru", "Abul Kalam Azad", "Sardar Patel", "Mahatma Gandhi"], ans: 1, exp: "Maulana Abul Kalam Azad, the first Education Minister of independent India, authored this book." },
+            { sub: "GK", cat: "Polity", topic: "Fundamental Rights", q: "Article 32 of the Indian Constitution deals with?", opts: ["Right to Equality", "Right to Freedom of Religion", "Constitutional Remedies", "Directive Principles"], ans: 2, exp: "Article 32 provides the Right to Constitutional Remedies, which Dr. B.R. Ambedkar called the 'heart and soul' of the Constitution." },
+            { sub: "GK", cat: "Science", topic: "Physics", q: "What is the SI unit of Force?", opts: ["Joule", "Newton", "Watt", "Pascal"], ans: 1, exp: "The SI unit of force is the Newton (N), named after Sir Isaac Newton." }
+        ];
+
+        // --- 2. GLOBAL STATE ---
+        let currentExam = 'CGL';
+        let currentTestType = 'full';
+        let currentMode = 'exam'; 
+        let testData = [];
+        let userState = [];
+        let currentIdx = 0;
+        let timerInterval;
+        let timerSecs = 0;
+        let isReviewMode = false;
+        let isInstantSolutionShown = false;
+
+        window.onload = () => {
+            renderDynamicSyllabus(); 
+            if(localStorage.getItem('nexa_cbt_active')) document.getElementById('resume-banner').style.display = 'flex';
+        };
+
+        // --- 3. UI DASHBOARD CONTROLS ---
+        function switchDashTab(tab) {
+            document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('tab-setup').style.display = tab === 'setup' ? 'block' : 'none';
+            document.getElementById('tab-analytics').style.display = tab === 'analytics' ? 'block' : 'none';
+        }
+
+        function selectPill(groupId, el) {
+            document.querySelectorAll(`#${groupId} .pill`).forEach(p => p.classList.remove('selected'));
+            el.classList.add('selected');
+            if(groupId === 'mode-group') currentMode = el.getAttribute('data-val');
+        }
+
+        function setExam(exam, el) { currentExam = exam; selectPill('exam-group', el); renderDynamicSyllabus(); }
+        function setTestType(type, el) { currentTestType = type; selectPill('type-group', el); renderDynamicSyllabus(); }
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('main-header').style.display = (id === 'screen-cbt') ? 'none' : 'block';
+            document.body.style.backgroundColor = (id === 'screen-cbt') ? '#ffffff' : 'var(--bg-dark)';
+        }
+
+        // --- 4. ACCORDION DYNAMIC SYLLABUS RENDERER ---
+        function renderDynamicSyllabus() {
+            const container = document.getElementById('dynamic-syllabus-container');
+            const renderer = document.getElementById('syllabus-renderer');
+            renderer.innerHTML = ''; 
+
+            if (currentTestType === 'full') { container.style.display = 'none'; return; }
+            container.style.display = 'block';
+            const syllabusData = EXAM_SYLLABI[currentExam];
+
+            if (currentTestType === 'sectional') {
+                let html = '<div class="syllabus-grid">';
+                Object.keys(syllabusData).forEach(subject => {
+                    html += `<label class="topic-lbl"><input type="checkbox" class="dyn-chk subject-chk" value="${subject}"> <span class="checkmark"></span> ${subject}</label>`;
+                });
+                html += '</div>';
+                renderer.innerHTML = html;
+            } 
+            else if (currentTestType === 'chapter') {
+                let html = '';
+                Object.keys(syllabusData).forEach((subject, subIdx) => {
+                    html += `<div class="syllabus-section"><div class="syllabus-title">${subject}</div>`;
+                    
+                    Object.keys(syllabusData[subject]).forEach((category, catIdx) => {
+                        let accId = `acc-${subIdx}-${catIdx}`;
+                        html += `
+                        <div class="category-wrapper">
+                            <div class="category-header" onclick="toggleAccordion('${accId}')">
+                                <div>
+                                    <input type="checkbox" class="cat-chk" onclick="toggleCategoryCheck('${accId}', this, event)"> 
+                                    ${category}
+                                </div>
+                                <span class="acc-icon" id="icon-${accId}">▼</span>
+                            </div>
+                            <div class="category-body" id="${accId}">
+                                <div class="syllabus-grid">
+                        `;
+                        syllabusData[subject][category].forEach(topic => {
+                            html += `<label class="topic-lbl"><input type="checkbox" class="dyn-chk topic-chk" data-sub="${subject}" data-cat="${category}" value="${topic}"> <span class="checkmark"></span> ${topic}</label>`;
+                        });
+                        html += `</div></div></div>`;
+                    });
+                    html += `</div>`;
+                });
+                renderer.innerHTML = html;
+            }
+        }
+
+        function toggleAccordion(id) {
+            const body = document.getElementById(id);
+            const icon = document.getElementById(`icon-${id}`);
+            if(body.style.display === 'block') {
+                body.style.display = 'none'; icon.classList.remove('open');
+            } else {
+                body.style.display = 'block'; icon.classList.add('open');
+            }
+        }
+
+        function toggleCategoryCheck(accId, checkbox, event) {
+            event.stopPropagation(); 
+            const childCheckboxes = document.querySelectorAll(`#${accId} .topic-chk`);
+            childCheckboxes.forEach(cb => cb.checked = checkbox.checked);
+        }
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+        }
+
+        // --- 5. SMART TEST GENERATOR (With Fallback) ---
+        function startNewCBT() {
+            const qCount = parseInt(document.querySelector('#q-group .selected').getAttribute('data-val'));
+            const timeLimit = parseInt(document.querySelector('#q-group .selected').getAttribute('data-time'));
+            
+            let selectedSubjects = [];
+            let selectedTopics = [];
+
+            if (currentTestType === 'full') {
+                selectedSubjects = Object.keys(EXAM_SYLLABI[currentExam]);
+            } else if (currentTestType === 'sectional') {
+                selectedSubjects = Array.from(document.querySelectorAll('.subject-chk:checked')).map(cb => cb.value);
+            } else if (currentTestType === 'chapter') {
+                selectedTopics = Array.from(document.querySelectorAll('.topic-chk:checked')).map(cb => ({ 
+                    topic: cb.value, cat: cb.getAttribute('data-cat'), sub: cb.getAttribute('data-sub') 
+                }));
+            }
+
+            if (selectedSubjects.length === 0 && selectedTopics.length === 0) {
+                alert("Please select at least one subject or chapter to begin!"); return;
+            }
+
+            // FILTER THE BANK
+            let availablePool = [];
+            if (currentTestType === 'chapter') {
+                availablePool = HARDCODED_BANK.filter(q => selectedTopics.some(st => st.topic === q.topic));
+            } else {
+                availablePool = HARDCODED_BANK.filter(q => selectedSubjects.includes(q.sub));
+            }
+
+            // AUTO GENERATE IF POOL IS EMPTY
+            if (availablePool.length === 0) {
+                let targetSub = currentTestType === 'chapter' ? selectedTopics[0].sub : selectedSubjects[0];
+                let targetTopic = currentTestType === 'chapter' ? selectedTopics[0].topic : "General Principles";
+                availablePool.push({
+                    sub: targetSub, cat: "Mixed", topic: targetTopic,
+                    q: `[Auto-Gen Concept] What is the core principle behind ${targetTopic}? (ID: ${Math.floor(Math.random()*9000)+1000})`,
+                    opts: ["Core Concept Logic A", "Distractor B", "Distractor C", "Distractor D"],
+                    ans: 0,
+                    exp: `To solve questions on ${targetTopic}, apply the standard formulas and logic associated with this topic.`
+                });
+            }
+
+            shuffleArray(availablePool);
+
+            testData = [];
+            let poolIndex = 0;
+            for (let i = 0; i < qCount; i++) {
+                testData.push({...availablePool[poolIndex % availablePool.length]});
+                poolIndex++;
+            }
+
+            userState = testData.map(() => ({ selected: null, status: 'unvisited' }));
+            currentIdx = 0; timerSecs = timeLimit;
+            
+            const badge = document.getElementById('test-mode-badge');
+            if(currentMode === 'practice') {
+                badge.innerText = "PRACTICE MODE"; badge.className = "cbt-mode-badge practice";
+                document.getElementById('btn-show-solution').style.display = 'inline-block';
+            } else {
+                badge.innerText = "EXAM MODE"; badge.className = "cbt-mode-badge";
+                document.getElementById('btn-show-solution').style.display = 'none';
+            }
+
+            saveState(); launchCBT();
+        }
+
+        function resumeCBT() {
+            const saved = JSON.parse(localStorage.getItem('nexa_cbt_active'));
+            if(saved) {
+                testData = saved.testData; userState = saved.userState;
+                currentIdx = saved.currentIdx; timerSecs = saved.timerSecs; currentMode = saved.currentMode || 'exam';
+                
+                const badge = document.getElementById('test-mode-badge');
+                if(currentMode === 'practice') {
+                    badge.innerText = "PRACTICE MODE"; badge.className = "cbt-mode-badge practice";
+                    document.getElementById('btn-show-solution').style.display = 'inline-block';
+                } else {
+                    badge.innerText = "EXAM MODE"; badge.className = "cbt-mode-badge";
+                    document.getElementById('btn-show-solution').style.display = 'none';
+                }
+                launchCBT();
+            }
+        }
+
+        // --- 6. CBT INTERFACE ENGINE ---
+        function launchCBT() {
+            isReviewMode = false;
+            document.getElementById('resume-banner').style.display = 'none';
+            showScreen('screen-cbt');
+            buildTabs(); buildPalette(); loadQuestion(currentIdx); startTimer();
+        }
+
+        function buildTabs() {
+            const tabsDiv = document.getElementById('subject-tabs');
+            tabsDiv.innerHTML = '';
+            const subjects = [...new Set(testData.map(q => q.sub))];
+            subjects.forEach(sub => {
+                const firstIdx = testData.findIndex(q => q.sub === sub);
+                tabsDiv.innerHTML += `<div class="sub-tab" onclick="loadQuestion(${firstIdx})">${sub}</div>`;
+            });
+        }
+
+        function loadQuestion(index) {
+            isInstantSolutionShown = false; 
+            if(!isReviewMode && userState[currentIdx].status === 'unvisited') userState[currentIdx].status = 'not_answered';
+            currentIdx = index;
+            const q = testData[index];
+            const state = userState[index];
+            if(!isReviewMode && state.status === 'unvisited') state.status = 'not_answered';
+
+            document.getElementById('q-subject-display').innerText = `[${q.sub} > ${q.topic}]`;
+            document.getElementById('q-number-display').innerText = index + 1;
+            document.getElementById('q-text').innerText = q.q;
+
+            const optsDiv = document.getElementById('options-container');
+            optsDiv.innerHTML = '';
+            
+            q.opts.forEach((optText, i) => {
+                let isChecked = state.selected === i ? 'checked' : '';
+                let reviewClass = '';
+                if (isReviewMode) {
+                    if (i === q.ans) reviewClass = 'correct-ans';
+                    else if (state.selected === i && i !== q.ans) reviewClass = 'wrong-ans';
+                }
+                optsDiv.innerHTML += `
+                    <label class="option-lbl ${reviewClass}">
+                        <input type="radio" name="cbt_answer" value="${i}" ${isChecked} ${isReviewMode ? 'disabled' : ''}>
+                        ${optText}
+                    </label>`;
+            });
+
+            document.getElementById('explanation-box').style.display = isReviewMode ? 'block' : 'none';
+            if(isReviewMode) document.getElementById('exp-text').innerText = q.exp;
+
+            document.querySelectorAll('.sub-tab').forEach(t => { t.classList.remove('active'); if(t.innerText === q.sub) t.classList.add('active'); });
+            updatePaletteUI();
+            if(!isReviewMode) saveState();
+        }
+
+        // --- PRACTICE MODE FEATURE ---
+        function showInstantSolution() {
+            if(isReviewMode) return;
+            const q = testData[currentIdx];
+            const radios = document.getElementsByName('cbt_answer');
+            let selectedVal = null;
+            radios.forEach(r => { if(r.checked) selectedVal = parseInt(r.value); });
+            
+            if(selectedVal === null) {
+                alert("Select an option first to check your answer!");
+                return;
+            }
+
+            const labels = document.querySelectorAll('.option-lbl');
+            labels.forEach((lbl, i) => {
+                lbl.classList.remove('correct-ans', 'wrong-ans');
+                if (i === q.ans) lbl.classList.add('correct-ans');
+                else if (selectedVal === i && i !== q.ans) lbl.classList.add('wrong-ans');
+            });
+
+            document.getElementById('explanation-box').style.display = 'block';
+            document.getElementById('exp-text').innerText = q.exp;
+            isInstantSolutionShown = true;
+        }
+
+        function handleAction(actionType) {
+            const state = userState[currentIdx];
+            const radios = document.getElementsByName('cbt_answer');
+            let selectedVal = null;
+            radios.forEach(r => { if(r.checked) selectedVal = parseInt(r.value); });
+
+            if (actionType === 'answered') {
+                state.status = (selectedVal !== null) ? 'answered' : 'not_answered';
+                state.selected = selectedVal;
+            } else if (actionType === 'marked') {
+                state.selected = selectedVal;
+                state.status = 'marked';
+            }
+            moveToNext();
+        }
+
+        function clearResponse() {
+            document.getElementsByName('cbt_answer').forEach(r => r.checked = false);
+            userState[currentIdx].selected = null; userState[currentIdx].status = 'not_answered';
+            if(isInstantSolutionShown && currentMode === 'practice') {
+                document.querySelectorAll('.option-lbl').forEach(lbl => { lbl.classList.remove('correct-ans', 'wrong-ans'); });
+                document.getElementById('explanation-box').style.display = 'none';
+            }
+            updatePaletteUI(); saveState();
+        }
+
+        function moveToNext() {
+            if(currentIdx < testData.length - 1) loadQuestion(currentIdx + 1);
+            else if(!isReviewMode) updatePaletteUI();
+        }
+
+        function buildPalette() {
+            const grid = document.getElementById('palette-grid');
+            grid.innerHTML = '';
+            testData.forEach((_, i) => { grid.innerHTML += `<div class="q-node unvisited" id="pal-${i}" onclick="loadQuestion(${i})">${i+1}</div>`; });
+        }
+
+        function updatePaletteUI() {
+            userState.forEach((state, i) => {
+                const btn = document.getElementById(`pal-${i}`);
+                if (isReviewMode) {
+                    if(state.selected === testData[i].ans) { btn.style.background = 'var(--cbt-answered)'; btn.style.color = 'white'; btn.style.border = 'none'; } 
+                    else if (state.selected !== null) { btn.style.background = 'var(--cbt-not-answered)'; btn.style.color = 'white'; btn.style.border = 'none'; } 
+                    else { btn.style.background = '#e2e8f0'; btn.style.color = '#333'; }
+                } else {
+                    btn.className = `q-node ${state.status}`;
+                }
+                if(i === currentIdx) { btn.style.border = "2px solid #0f172a"; btn.style.transform = "scale(1.15)"; btn.style.zIndex = "10"; } 
+                else { btn.style.border = isReviewMode ? "none" : "1px solid #94a3b8"; btn.style.transform = "scale(1)"; btn.style.zIndex = "1"; }
+            });
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerSecs--;
+                let m = Math.floor(timerSecs / 60); let s = timerSecs % 60;
+                document.getElementById('cbt-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                
+                if(timerSecs % 5 === 0) saveState(); 
+                if(timerSecs <= 0 && currentMode === 'exam') { clearInterval(timerInterval); alert("Time up! Auto-submitting."); processResult(); }
+            }, 1000);
+        }
+
+        function saveState() {
+            if(!isReviewMode) localStorage.setItem('nexa_cbt_active', JSON.stringify({testData, userState, currentIdx, timerSecs, currentMode}));
+        }
+
+        function submitExam() {
+            if(confirm("Submit the exam?")) { clearInterval(timerInterval); processResult(); }
+        }
+
+        function processResult() {
+            const useNegMarking = document.getElementById('neg-marking-toggle').checked && currentMode === 'exam'; 
+            let attempt = 0, correct = 0;
+            let subStats = {}; 
+            
+            userState.forEach((state, i) => {
+                const sub = testData[i].sub;
+                if(!subStats[sub]) subStats[sub] = { att: 0, cor: 0 };
+                if(state.selected !== null) {
+                    attempt++; subStats[sub].att++;
+                    if(state.selected === testData[i].ans) { correct++; subStats[sub].cor++; }
+                }
+            });
+
+            const incorrect = attempt - correct;
+            const score = useNegMarking ? ((correct * 2) - (incorrect * 0.5)) : (correct * 2);
+            const accuracy = attempt === 0 ? 0 : Math.round((correct / attempt) * 100);
+
+            const breakdownDiv = document.getElementById('subject-breakdown');
+            breakdownDiv.innerHTML = '<h3 style="color: var(--primary-light); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 10px;">Subject Accuracy Breakdown</h3>';
+            
+            for(let sub in subStats) {
+                let subAcc = subStats[sub].att === 0 ? 0 : Math.round((subStats[sub].cor / subStats[sub].att) * 100);
+                let color = subAcc >= 70 ? 'var(--cbt-answered)' : (subAcc < 40 && subStats[sub].att > 0 ? 'var(--cbt-not-answered)' : 'var(--text-light)');
+                breakdownDiv.innerHTML += `
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px;">
+                        <span style="color: var(--text-light); font-weight: 600;">${sub}</span>
+                        <span style="color: ${color}; font-weight: 800;">${subAcc}% (${subStats[sub].cor}/${subStats[sub].att})</span>
+                    </div>`;
+            }
+
+            const history = JSON.parse(localStorage.getItem('nexa_cbt_history') || '[]');
+            history.unshift({ date: new Date().toLocaleDateString(), type: currentTestType, mode: currentMode, score: score, acc: accuracy });
+            localStorage.setItem('nexa_cbt_history', JSON.stringify(history));
+            localStorage.removeItem('nexa_cbt_active');
+
+            document.getElementById('res-attempted').innerText = `${attempt} / ${testData.length}`;
+            document.getElementById('res-score').innerText = score.toFixed(1);
+            document.getElementById('res-acc').innerText = `${accuracy}%`;
+            showScreen('screen-result');
+        }
+
+        function loadAnalytics() {
+            const history = JSON.parse(localStorage.getItem('nexa_cbt_history') || '[]');
+            const container = document.getElementById('history-container');
+            container.innerHTML = '';
+            if(history.length === 0) { container.innerHTML = '<p style="color: var(--text-secondary);">No past tests found.</p>'; return; }
+            history.forEach(h => {
+                container.innerHTML += `
+                    <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color:white; font-size:1.1rem; text-transform:capitalize;">${h.type} (${h.mode})</strong><br>
+                            <span style="color:var(--text-secondary); font-size:0.9rem;">${h.date}</span>
+                        </div>
+                        <div style="display: flex; gap: 20px; text-align: center;">
+                            <div><h3 style="color: var(--primary-color);">${h.score}</h3><small style="color: var(--text-secondary);">Score</small></div>
+                            <div><h3 style="color:var(--cbt-answered)">${h.acc}%</h3><small style="color: var(--text-secondary);">Acc</small></div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function reviewExam() {
+            isReviewMode = true;
+            document.getElementById('cbt-timer').innerText = "REVIEW";
+            document.getElementById('cbt-actions').style.display = 'none';
+            document.getElementById('review-actions').style.display = 'flex';
+            document.getElementById('submit-wrapper').style.display = 'none';
+            document.getElementById('exit-review-wrapper').style.display = 'block';
+            showScreen('screen-cbt'); buildTabs(); buildPalette(); loadQuestion(0);
+        }
+
+        function exitReview() { window.location.reload(); }
+    </script>
+</body>
+</html>
